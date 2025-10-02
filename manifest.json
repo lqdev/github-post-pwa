@@ -2,7 +2,9 @@
   "name": "GitHub Post Creator",
   "short_name": "GitHub Post",
   "description": "Create GitHub bookmarks and responses from any page",
-  "start_url": "/",
+  "start_url": "/github-post-pwa/",
+  "scope": "/github-post-pwa/",
+  "id": "/github-post-pwa/",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#2ea44f",
@@ -19,7 +21,7 @@
     }
   ],
   "share_target": {
-    "action": "/share.html",
+    "action": "/github-post-pwa/share.html",
     "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
