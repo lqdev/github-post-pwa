@@ -1,10 +1,12 @@
-const CACHE_NAME = 'github-post-v2';
+const CACHE_NAME = 'github-post-v3';
 const urlsToCache = [
   '/github-post-pwa/',
   '/github-post-pwa/index.html',
   '/github-post-pwa/share.html',
   '/github-post-pwa/manifest.json',
-  '/github-post-pwa/icon.webp'
+  '/github-post-pwa/icon.webp',
+  '/github-post-pwa/icon-192.webp',
+  '/github-post-pwa/icon-512.webp'
 ];
 
 self.addEventListener('install', (event) => {
