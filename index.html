@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2ea44f">
+    <title>GitHub Post Creator</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/webp" href="icon-192.webp">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+
+        .install-btn {
+            background: #2ea44f;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, background 0.2s;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .install-btn:hover {
+            background: #2c974b;
+            transform: translateY(-2px);
+        }
+
+        .install-btn:active {
+            transform: translateY(0);
+        }
+
+        .steps {
+            text-align: left;
+            margin-top: 1.5rem;
+        }
+
+        .step {
+            margin: 1rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .step::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #2ea44f;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        #install-container {
+            display: block;
+        }
+
+        #installed-container {
+            display: none;
+        }
+
+        .success {
+            color: #2ea44f;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="emoji">📌</div>
+        <h1>GitHub Post Creator</h1>
+        <p class="subtitle">Save bookmarks and responses from any page</p>
+
+        <div class="card" id="install-container">
+            <h2>Install to Get Started</h2>
+            <p style="margin: 1rem 0;">Add this app to your home screen to use it from the share menu</p>
+            <button class="install-btn" id="install-btn">Install App</button>
+
+            <div class="steps">
+                <div class="step">Install the app using the button above</div>
+                <div class="step">Browse to any webpage</div>
+                <div class="step">Tap the Share button</div>
+                <div class="step">Select "GitHub Post Creator"</div>
+                <div class="step">Choose Bookmark or Response</div>
+            </div>
+        </div>
+
+        <div class="card" id="installed-container">
+            <div class="emoji">🎉</div>
+            <h2 class="success">App Installed!</h2>
+            <p style="margin: 1rem 0;">You can now use GitHub Post Creator from any page's share menu</p>
+        </div>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+        const installContainer = document.getElementById('install-container');
+        const installedContainer = document.getElementById('installed-container');
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            installContainer.style.display = 'none';
+            installedContainer.style.display = 'block';
+        }
+
+        // Capture install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'inline-block';
+        });
+
+        // Handle install button click
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+
+                if (outcome === 'accepted') {
+                    installContainer.style.display = 'none';
+                    installedContainer.style.display = 'block';
+                }
+
+                deferredPrompt = null;
+            } else {
+                // Fallback instructions for iOS
+                alert('To install:\n\n1. Tap the Share button\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
+            }
+        });
+
+        // Handle successful install
+        window.addEventListener('appinstalled', () => {
+            installContainer.style.display = 'none';
+            installedContainer.style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>
