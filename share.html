@@ -103,26 +103,113 @@
 
     <script>
         const params = new URLSearchParams(window.location.search);
-        const sharedTitle = params.get('title') || '';
-        const sharedUrl = params.get('url') || '';
-        const sharedText = params.get('text') || '';
+        let sharedTitle = params.get('title') || '';
+        let sharedUrl = params.get('url') || '';
+        let sharedText = params.get('text') || '';
 
-        // Display page info
-        if (sharedTitle) {
-            document.getElementById('page-info').textContent = `Page: ${sharedTitle}`;
+        // Function to parse shared content and extract URL and title
+        function parseSharedContent() {
+            // If we already have title and URL from the share target API, use them
+            if (sharedTitle && sharedUrl) {
+                return {
+                    title: sharedTitle,
+                    url: sharedUrl,
+                    content: sharedText
+                };
+            }
+
+            // Otherwise, parse the shared text to extract URL and title
+            if (!sharedText) {
+                return { title: '', url: '', content: '' };
+            }
+
+            const lines = sharedText.split('\n').filter(line => line.trim());
+            let extractedUrl = '';
+            let extractedTitle = '';
+            let contentLines = [];
+
+            // Look for URLs in the text
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const urls = sharedText.match(urlRegex) || [];
+
+            if (urls.length > 0) {
+                extractedUrl = urls[0];
+                // Clean up URL (remove text fragments that make URLs messy)
+                if (extractedUrl.includes('#:~:text=')) {
+                    extractedUrl = extractedUrl.split('#:~:text=')[0];
+                }
+            }
+
+            // Extract title and content
+            for (const line of lines) {
+                const trimmed = line.trim();
+                
+                // Skip URLs when building content
+                if (urlRegex.test(trimmed)) {
+                    continue;
+                }
+
+                // Look for quoted content as title
+                if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+                    extractedTitle = trimmed.slice(1, -1); // Remove quotes
+                } else if (trimmed && !extractedTitle) {
+                    // Use first non-URL line as title if no quoted content
+                    extractedTitle = trimmed;
+                }
+
+                // Collect all non-URL lines as content
+                if (trimmed) {
+                    contentLines.push(trimmed);
+                }
+            }
+
+            return {
+                title: sharedTitle || extractedTitle,
+                url: sharedUrl || extractedUrl,
+                content: contentLines.join('\n')
+            };
         }
 
-        // Format selected text as blockquotes
-        const formattedContent = sharedText
-            ? sharedText.split('\n').map(line => '> ' + line).join('\n')
+        // Parse the shared content
+        const parsedData = parseSharedContent();
+
+        // Update the display
+        const pageInfo = document.getElementById('page-info');
+        if (parsedData.title && parsedData.url) {
+            pageInfo.innerHTML = `
+                <strong>✅ Ready to post</strong><br>
+                <strong>Title:</strong> ${parsedData.title}<br>
+                <strong>URL:</strong> <a href="${parsedData.url}" target="_blank">${parsedData.url}</a>
+            `;
+        } else if (parsedData.title || parsedData.url) {
+            pageInfo.innerHTML = `
+                <strong>⚠️ Partial data detected</strong><br>
+                ${parsedData.title ? `<strong>Title:</strong> ${parsedData.title}<br>` : ''}
+                ${parsedData.url ? `<strong>URL:</strong> <a href="${parsedData.url}" target="_blank">${parsedData.url}</a><br>` : ''}
+            `;
+        } else {
+            pageInfo.innerHTML = `
+                <strong>❌ No content detected</strong><br>
+                Raw shared text: ${sharedText || 'None'}
+            `;
+        }
+
+        // Format content as blockquotes (excluding URLs from the quote)
+        const formattedContent = parsedData.content
+            ? parsedData.content.split('\n')
+                .filter(line => line.trim())
+                .filter(line => !/(https?:\/\/[^\s]+)/.test(line)) // Remove URL lines
+                .map(line => '> ' + line.trim())
+                .join('\n')
             : '';
 
         // Bookmark button
         document.getElementById('bookmark-btn').addEventListener('click', () => {
+            const issueTitle = `[Bookmark] ${parsedData.title || 'Shared Content'}`;
             const issueUrl = 'https://github.com/lqdev/luisquintanilla.me/issues/new?template=post-bookmark.yml&' +
-                'title=' + encodeURIComponent('[Bookmark] ' + sharedTitle) + '&' +
-                'target_url=' + encodeURIComponent(sharedUrl) + '&' +
-                'post_title=' + encodeURIComponent(sharedTitle) + '&' +
+                'title=' + encodeURIComponent(issueTitle) + '&' +
+                'target_url=' + encodeURIComponent(parsedData.url) + '&' +
+                'post_title=' + encodeURIComponent(parsedData.title || 'Shared Content') + '&' +
                 'content=' + encodeURIComponent(formattedContent);
 
             window.location.href = issueUrl;
@@ -130,10 +217,11 @@
 
         // Response button
         document.getElementById('response-btn').addEventListener('click', () => {
+            const issueTitle = `[Response] ${parsedData.title || 'Shared Content'}`;
             const issueUrl = 'https://github.com/lqdev/luisquintanilla.me/issues/new?template=post-response.yml&' +
-                'title=' + encodeURIComponent('[Response] ' + sharedTitle) + '&' +
-                'target_url=' + encodeURIComponent(sharedUrl) + '&' +
-                'post_title=' + encodeURIComponent(sharedTitle) + '&' +
+                'title=' + encodeURIComponent(issueTitle) + '&' +
+                'target_url=' + encodeURIComponent(parsedData.url) + '&' +
+                'post_title=' + encodeURIComponent(parsedData.title || 'Shared Content') + '&' +
                 'content=' + encodeURIComponent(formattedContent);
 
             window.location.href = issueUrl;
