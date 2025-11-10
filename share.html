@@ -237,7 +237,8 @@
             const issueTitle = `[Read Later] ${parsedData.title || parsedData.url}`;
             const issueUrl = 'https://github.com/lqdev/luisquintanilla.me/issues/new?template=add-read-later.yml&' +
                 'title=' + encodeURIComponent(issueTitle) + '&' +
-                'url=' + encodeURIComponent(parsedData.url);
+                'url=' + encodeURIComponent(parsedData.url) + '&' +
+                'url_title=' + encodeURIComponent(parsedData.title || '');
 
             window.location.href = issueUrl;
         });
