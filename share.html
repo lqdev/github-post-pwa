@@ -96,6 +96,11 @@
             Response
         </button>
 
+        <button class="btn" id="read-later-btn">
+            <span class="icon">📖</span>
+            Read Later
+        </button>
+
         <div class="info" id="page-info">
             Loading shared content...
         </div>
@@ -223,6 +228,16 @@
                 'target_url=' + encodeURIComponent(parsedData.url) + '&' +
                 'post_title=' + encodeURIComponent(parsedData.title || 'Shared Content') + '&' +
                 'content=' + encodeURIComponent(formattedContent);
+
+            window.location.href = issueUrl;
+        });
+
+        // Read Later button
+        document.getElementById('read-later-btn').addEventListener('click', () => {
+            const issueTitle = `[Read Later] ${parsedData.title || parsedData.url}`;
+            const issueUrl = 'https://github.com/lqdev/luisquintanilla.me/issues/new?template=add-read-later.yml&' +
+                'title=' + encodeURIComponent(issueTitle) + '&' +
+                'url=' + encodeURIComponent(parsedData.url);
 
             window.location.href = issueUrl;
         });
