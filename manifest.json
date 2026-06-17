@@ -1,7 +1,7 @@
 {
   "name": "GitHub Post Creator",
   "short_name": "GitHub Post",
-  "description": "Create GitHub bookmarks and responses from any page",
+  "description": "Create GitHub bookmarks, responses, and read-it-later posts from any page",
   "categories": ["productivity", "utilities"],
   "start_url": "/github-post-pwa/?source=pwa",
   "scope": "/github-post-pwa/",

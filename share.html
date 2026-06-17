@@ -8,81 +8,10 @@
     <title>Choose Post Type</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/webp" href="./icon.webp">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        h1 {
-            margin-bottom: 1.5rem;
-            color: #333;
-            font-size: 1.8rem;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 1.2rem;
-            margin: 1rem 0;
-            border: 2px solid #e1e4e8;
-            border-radius: 8px;
-            background: white;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-            font-weight: 500;
-        }
-
-        .btn:hover {
-            border-color: #2ea44f;
-            background: #f6f8fa;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .icon {
-            font-size: 1.5rem;
-            margin-right: 0.5rem;
-        }
-
-        .info {
-            background: #f6f8fa;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-            color: #666;
-        }
-    </style>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 
-<body>
+<body class="page-share">
     <div class="container">
         <h1>Create GitHub Post</h1>
 
@@ -96,9 +25,9 @@
             Response
         </button>
 
-        <button class="btn" id="read-later-btn">
+        <button class="btn" id="readlater-btn">
             <span class="icon">📖</span>
-            Read Later
+            Read It Later
         </button>
 
         <div class="info" id="page-info">
@@ -106,143 +35,7 @@
         </div>
     </div>
 
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        let sharedTitle = params.get('title') || '';
-        let sharedUrl = params.get('url') || '';
-        let sharedText = params.get('text') || '';
-
-        // Function to parse shared content and extract URL and title
-        function parseSharedContent() {
-            // If we already have title and URL from the share target API, use them
-            if (sharedTitle && sharedUrl) {
-                return {
-                    title: sharedTitle,
-                    url: sharedUrl,
-                    content: sharedText
-                };
-            }
-
-            // Otherwise, parse the shared text to extract URL and title
-            if (!sharedText) {
-                return { title: '', url: '', content: '' };
-            }
-
-            const lines = sharedText.split('\n').filter(line => line.trim());
-            let extractedUrl = '';
-            let extractedTitle = '';
-            let contentLines = [];
-
-            // Look for URLs in the text
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            const urls = sharedText.match(urlRegex) || [];
-
-            if (urls.length > 0) {
-                extractedUrl = urls[0];
-                // Clean up URL (remove text fragments that make URLs messy)
-                if (extractedUrl.includes('#:~:text=')) {
-                    extractedUrl = extractedUrl.split('#:~:text=')[0];
-                }
-            }
-
-            // Extract title and content
-            for (const line of lines) {
-                const trimmed = line.trim();
-                
-                // Skip URLs when building content
-                if (urlRegex.test(trimmed)) {
-                    continue;
-                }
-
-                // Look for quoted content as title
-                if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
-                    extractedTitle = trimmed.slice(1, -1); // Remove quotes
-                } else if (trimmed && !extractedTitle) {
-                    // Use first non-URL line as title if no quoted content
-                    extractedTitle = trimmed;
-                }
-
-                // Collect all non-URL lines as content
-                if (trimmed) {
-                    contentLines.push(trimmed);
-                }
-            }
-
-            return {
-                title: sharedTitle || extractedTitle,
-                url: sharedUrl || extractedUrl,
-                content: contentLines.join('\n')
-            };
-        }
-
-        // Parse the shared content
-        const parsedData = parseSharedContent();
-
-        // Update the display
-        const pageInfo = document.getElementById('page-info');
-        if (parsedData.title && parsedData.url) {
-            pageInfo.innerHTML = `
-                <strong>✅ Ready to post</strong><br>
-                <strong>Title:</strong> ${parsedData.title}<br>
-                <strong>URL:</strong> <a href="${parsedData.url}" target="_blank">${parsedData.url}</a>
-            `;
-        } else if (parsedData.title || parsedData.url) {
-            pageInfo.innerHTML = `
-                <strong>⚠️ Partial data detected</strong><br>
-                ${parsedData.title ? `<strong>Title:</strong> ${parsedData.title}<br>` : ''}
-                ${parsedData.url ? `<strong>URL:</strong> <a href="${parsedData.url}" target="_blank">${parsedData.url}</a><br>` : ''}
-            `;
-        } else {
-            pageInfo.innerHTML = `
-                <strong>❌ No content detected</strong><br>
-                Raw shared text: ${sharedText || 'None'}
-            `;
-        }
-
-        // Format content as blockquotes (excluding URLs from the quote)
-        const formattedContent = parsedData.content
-            ? parsedData.content.split('\n')
-                .filter(line => line.trim())
-                .filter(line => !/(https?:\/\/[^\s]+)/.test(line)) // Remove URL lines
-                .map(line => '> ' + line.trim())
-                .join('\n')
-            : '';
-
-        // Bookmark button
-        document.getElementById('bookmark-btn').addEventListener('click', () => {
-            const issueTitle = `[Bookmark] ${parsedData.title || 'Shared Content'}`;
-            const issueUrl = 'https://github.com/lqdev/luisquintanilla.me/issues/new?template=post-bookmark.yml&' +
-                'title=' + encodeURIComponent(issueTitle) + '&' +
-                'target_url=' + encodeURIComponent(parsedData.url) + '&' +
-                'post_title=' + encodeURIComponent(parsedData.title || 'Shared Content') + '&' +
-                'content=' + encodeURIComponent(formattedContent);
-
-            window.location.href = issueUrl;
-        });
-
-        // Response button
-        document.getElementById('response-btn').addEventListener('click', () => {
-            const issueTitle = `[Response] ${parsedData.title || 'Shared Content'}`;
-            const issueUrl = 'https://github.com/lqdev/luisquintanilla.me/issues/new?template=post-response.yml&' +
-                'title=' + encodeURIComponent(issueTitle) + '&' +
-                'target_url=' + encodeURIComponent(parsedData.url) + '&' +
-                'post_title=' + encodeURIComponent(parsedData.title || 'Shared Content') + '&' +
-                'content=' + encodeURIComponent(formattedContent);
-
-            window.location.href = issueUrl;
-        });
-
-        // Read Later button
-        document.getElementById('read-later-btn').addEventListener('click', () => {
-            const issueTitle = `[Read Later] ${parsedData.title || parsedData.url}`;
-            const issueUrl = 'https://github.com/lqdev/luisquintanilla.me/issues/new?template=add-read-later.yml&' +
-                'title=' + encodeURIComponent(issueTitle) + '&' +
-                'url=' + encodeURIComponent(parsedData.url) + '&' +
-                'url_title=' + encodeURIComponent(parsedData.title || '');
-
-            window.location.href = issueUrl;
-        });
-    </script>
+    <script src="./share.js"></script>
 </body>
 
 </html>
