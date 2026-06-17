@@ -49,10 +49,12 @@ This is a PWA, so you install it from the browser (not an app store).
 2. Tap the **Install App** button on the page (or use the ⋮ menu → **Install app / Add to Home screen**)
 3. Confirm the install
 
-### Desktop (Chrome / Edge)
+### Desktop (Windows — Brave / Chrome / Edge)
 
 1. Open https://lqdev.github.io/github-post-pwa/
-2. Click the **install icon** in the address bar (or the **Install App** button on the page)
+2. Click the **install icon** in the address bar (or the **Install App** button on the page).
+   Installing is what registers the app as a **Windows share target** — see the desktop
+   note under *Usage* below.
 
 ## Usage
 
@@ -68,6 +70,24 @@ This is a PWA, so you install it from the browser (not an app store).
 > **Note (Android):** Web Share Target works once the app is **installed**. On iOS,
 > Safari does not support the Web Share *Target* API, so the installed icon acts mainly
 > as a launcher; the share-into-app flow is an Android/Chromium capability.
+
+> **Note (Desktop / Windows + Brave):** Once **installed**, the app registers as a
+> Windows share target and shows up in the **Windows share dialog** — this works in Brave
+> (it's core Chromium PWA plumbing, not a Google service). The catch: Brave's desktop
+> toolbar has no built-in "Share this page" button, so you need a way to open the share
+> sheet. Brave *does* support the Web Share API, so the simplest trigger is a one-line
+> bookmarklet — save this as a bookmark and click it on any page:
+>
+> ```js
+> javascript:(function(){navigator.share({title:document.title,url:location.href}).catch(function(){})})()
+> ```
+>
+> It opens the Windows share sheet; pick **GitHub Post Creator** and continue as usual.
+> If the app doesn't appear, reinstall it, and don't use a **Tor/private** window (Brave
+> disables `navigator.share()` there). For the most polished native Windows Share
+> integration, **Edge** is the smoothest fallback. As a no-share-sheet option on any
+> desktop browser, open `share.html` directly with query params:
+> `…/share.html?title=Example&url=https://example.com&text=notes`.
 
 ## Post Types
 
