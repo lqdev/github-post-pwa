@@ -53,8 +53,10 @@ This is a PWA, so you install it from the browser (not an app store).
 
 1. Open https://lqdev.github.io/github-post-pwa/
 2. Click the **install icon** in the address bar (or the **Install App** button on the page).
-   Installing is what registers the app as a **Windows share target** — see the desktop
-   note under *Usage* below.
+   Installing registers the app as a **Windows share target** and gives you a launcher.
+
+> On desktop you don't actually need to install — the recommended trigger is a
+> **bookmarklet that opens `share.html` directly** (see the desktop note under *Usage*).
 
 ## Usage
 
@@ -71,23 +73,31 @@ This is a PWA, so you install it from the browser (not an app store).
 > Safari does not support the Web Share *Target* API, so the installed icon acts mainly
 > as a launcher; the share-into-app flow is an Android/Chromium capability.
 
-> **Note (Desktop / Windows + Brave):** Once **installed**, the app registers as a
-> Windows share target and shows up in the **Windows share dialog** — this works in Brave
-> (it's core Chromium PWA plumbing, not a Google service). The catch: Brave's desktop
-> toolbar has no built-in "Share this page" button, so you need a way to open the share
-> sheet. Brave *does* support the Web Share API, so the simplest trigger is a one-line
-> bookmarklet — save this as a bookmark and click it on any page:
+> **Note (Desktop / Windows + Brave, Chrome):** On desktop the cleanest trigger is a
+> **bookmarklet that opens `share.html` directly** — it skips the OS share sheet entirely,
+> which is the unreliable part on desktop (Brave/Chrome often won't list an installed PWA
+> as a share target; Edge is the exception). Save this as a bookmark and click it on any
+> page — it passes the page title, URL, and any selected text straight into the app:
 >
 > ```js
-> javascript:(function(){navigator.share({title:document.title,url:location.href}).catch(function(){})})()
+> javascript:(function(){var s=window.getSelection?''+window.getSelection():'';window.open('https://lqdev.github.io/github-post-pwa/share.html?title='+encodeURIComponent(document.title)+'&url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(s),'_blank','noopener');})();
 > ```
 >
-> It opens the Windows share sheet; pick **GitHub Post Creator** and continue as usual.
-> If the app doesn't appear, reinstall it, and don't use a **Tor/private** window (Brave
-> disables `navigator.share()` there). For the most polished native Windows Share
-> integration, **Edge** is the smoothest fallback. As a no-share-sheet option on any
-> desktop browser, open `share.html` directly with query params:
-> `…/share.html?title=Example&url=https://example.com&text=notes`.
+> **Optional — one bookmarklet for every device** (native share sheet on touch, direct
+> `share.html` on desktop): it uses `navigator.share()` only on touch devices and falls
+> back to opening `share.html` directly everywhere else (and on any non-cancel error):
+>
+> ```js
+> javascript:(function(){var u='https://lqdev.github.io/github-post-pwa/share.html',t=document.title,l=location.href,s=window.getSelection?''+window.getSelection():'';function go(){window.open(u+'?title='+encodeURIComponent(t)+'&url='+encodeURIComponent(l)+'&text='+encodeURIComponent(s),'_blank','noopener');}if(matchMedia('(pointer:coarse)').matches&&navigator.share){navigator.share({title:t,url:l,text:s}).catch(function(e){if(e&&e.name!=='AbortError')go();});}else{go();}})();
+> ```
+>
+> **Installing a bookmarklet:** you can't install it by clicking the code — create a new
+> bookmark and paste the `javascript:…` line in as its **URL** (or drag a pre-made link to
+> the bookmarks bar). Strict-CSP sites (e.g. GitHub, X) block `javascript:` bookmarklets,
+> so it won't run on those pages.
+>
+> If you'd rather use the OS share sheet, install the app and share from the **Windows
+> share dialog** — most reliable in **Edge**.
 
 ## Post Types
 
