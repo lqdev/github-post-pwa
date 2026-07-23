@@ -1,4 +1,4 @@
-const CACHE_NAME = 'github-post-v4';
+const CACHE_NAME = 'github-post-v5';
 const urlsToCache = [
   '/github-post-pwa/',
   '/github-post-pwa/index.html',

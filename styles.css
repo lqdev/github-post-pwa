@@ -167,3 +167,69 @@ body.page-install {
     color: #666;
     word-break: break-word;
 }
+
+/* Editable review fields (share.html) */
+
+.fields {
+    margin-bottom: 0.5rem;
+}
+
+.field {
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 0.35rem;
+}
+
+.field .hint {
+    font-weight: 400;
+    color: #888;
+    font-size: 0.78rem;
+}
+
+.field input,
+.field textarea,
+.field select {
+    width: 100%;
+    padding: 0.7rem 0.75rem;
+    border: 2px solid #e1e4e8;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #333;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+    outline: none;
+    border-color: #2ea44f;
+}
+
+.field textarea {
+    resize: vertical;
+    min-height: 4.5rem;
+}
+
+.field input.invalid {
+    border-color: #d1242f;
+}
+
+.edit-note {
+    font-size: 0.8rem;
+    color: #555;
+    background: #f0f6ff;
+    border-left: 3px solid #2ea44f;
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    margin: 0.25rem 0 1.25rem;
+    text-align: left;
+}

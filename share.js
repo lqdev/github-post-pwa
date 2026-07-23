@@ -69,96 +69,97 @@ const formattedContent = parsed.content
         .join('\n')
     : '';
 
-// --- Safe preview rendering (shared content is untrusted; never use innerHTML) ---
+// --- Editable review screen (shared content is untrusted; never use innerHTML) ---
 
 const pageInfo = document.getElementById('page-info');
+const titleInput = document.getElementById('f-title');
+const urlInput = document.getElementById('f-url');
+const notesInput = document.getElementById('f-notes');
+const responseTypeInput = document.getElementById('f-response-type');
 
-function strong(text) {
-    const el = document.createElement('strong');
-    el.textContent = text;
-    return el;
+// Prefill the editable fields from the parsed share. The user finalises the values here,
+// then just submits on GitHub — so GitHub's form re-seeding can't clobber their edits.
+titleInput.value = parsed.title || '';
+urlInput.value = parsed.url || '';
+notesInput.value = formattedContent;
+
+// Short, safe status line reflecting whether a URL was detected.
+function renderStatus() {
+    pageInfo.textContent = urlInput.value.trim()
+        ? '✅ Review the fields above, then choose a post type.'
+        : '⚠️ No URL detected — add one above before posting.';
 }
 
-function labeledValue(label, value) {
-    const fragment = document.createDocumentFragment();
-    fragment.append(strong(label), document.createTextNode(value), document.createElement('br'));
-    return fragment;
-}
-
-function renderPreview() {
-    pageInfo.replaceChildren();
-
-    if (parsed.title && parsed.url) {
-        pageInfo.append(strong('✅ Ready to post'), document.createElement('br'));
-        pageInfo.append(labeledValue('Title: ', parsed.title));
-        pageInfo.append(strong('URL: '));
-        appendUrl(parsed.url);
-    } else if (parsed.title || parsed.url) {
-        pageInfo.append(strong('⚠️ Partial data detected'), document.createElement('br'));
-        if (parsed.title) pageInfo.append(labeledValue('Title: ', parsed.title));
-        if (parsed.url) {
-            pageInfo.append(strong('URL: '));
-            appendUrl(parsed.url);
-        }
-    } else {
-        pageInfo.append(strong('❌ No content detected'), document.createElement('br'));
-        pageInfo.append(document.createTextNode('Raw shared text: ' + (sharedText || 'None')));
-    }
-}
-
-// Only render http(s) URLs as clickable links; anything else is shown as plain text.
-function appendUrl(url) {
-    if (/^https?:\/\//i.test(url)) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = url;
-        pageInfo.append(link);
-    } else {
-        pageInfo.append(document.createTextNode(url));
-    }
-}
-
-renderPreview();
+renderStatus();
 
 // --- Issue creation ---
 
-// Build and open a pre-filled GitHub issue. `fields` are the issue-form field ids.
+// Build and open a pre-filled GitHub issue on the matching issue-form template. Keeping
+// `template=` means GitHub shows the styled form; the values come from the edited fields.
 function openIssue(fields) {
     const query = new URLSearchParams(fields).toString();
     window.location.href = `https://github.com/${TARGET_REPO}/issues/new?${query}`;
 }
 
-const postTitle = parsed.title || 'Shared Content';
+// Read the current (possibly edited) field values.
+function currentValues() {
+    return {
+        title: titleInput.value.trim(),
+        url: urlInput.value.trim(),
+        notes: notesInput.value,
+        responseType: responseTypeInput.value,
+    };
+}
+
+// A target URL is required for every post type.
+function requireUrl(url) {
+    if (url) return true;
+    urlInput.classList.add('invalid');
+    urlInput.focus();
+    return false;
+}
+
+urlInput.addEventListener('input', () => {
+    urlInput.classList.remove('invalid');
+    renderStatus();
+});
 
 document.getElementById('bookmark-btn').addEventListener('click', () => {
+    const { title, url, notes } = currentValues();
+    if (!requireUrl(url)) return;
+    const postTitle = title || 'Shared Content';
     openIssue({
         template: 'post-bookmark.yml',
         title: `[Bookmark] ${postTitle}`,
-        target_url: parsed.url,
+        target_url: url,
         post_title: postTitle,
-        content: formattedContent,
+        content: notes,
     });
 });
 
 document.getElementById('response-btn').addEventListener('click', () => {
+    const { title, url, notes, responseType } = currentValues();
+    if (!requireUrl(url)) return;
+    const postTitle = title || 'Shared Content';
     openIssue({
         template: 'post-response.yml',
         title: `[Response] ${postTitle}`,
-        target_url: parsed.url,
+        response_type: responseType,
+        target_url: url,
         post_title: postTitle,
-        content: formattedContent,
+        content: notes,
     });
 });
 
 document.getElementById('readlater-btn').addEventListener('click', () => {
-    // Read Later only needs a URL; leave url_title blank so the site fetches the
-    // real page title automatically when it isn't available from the share.
+    const { title, url } = currentValues();
+    if (!requireUrl(url)) return;
+    // url_title mirrors the editable Title field; if the user cleared it, the site
+    // auto-fetches the real page title from the URL.
     openIssue({
         template: 'add-read-later.yml',
-        title: `[Read Later] ${parsed.title || parsed.url}`,
-        url: parsed.url,
-        url_title: parsed.title || '',
+        title: `[Read Later] ${title || url}`,
+        url: url,
+        url_title: title,
     });
 });

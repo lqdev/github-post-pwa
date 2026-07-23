@@ -4,13 +4,15 @@ A minimal, installable **Progressive Web App (PWA)** that turns your phone's (or
 desktop's) **Share** button into a one-tap shortcut for posting to my website,
 [luisquintanilla.me](https://github.com/lqdev/luisquintanilla.me).
 
-Share any page → pick a post type → it opens a **pre-filled GitHub issue**. A GitHub
-Action on the website repo then turns that issue into a published post via pull request.
-No app store, no backend of its own — just a static PWA hosted on GitHub Pages.
+Share any page → tweak the title/URL/notes if you like → pick a post type → it opens a
+**pre-filled GitHub issue**. A GitHub Action on the website repo then turns that issue into
+a published post via pull request. No app store, no backend of its own — just a static PWA
+hosted on GitHub Pages.
 
 > **Live app:** https://lqdev.github.io/github-post-pwa/
 
 - **Quick Capture**: Post from any app via the native share sheet
+- **Edit before you post**: Tweak the title, URL, or notes in the app — your changes carry into the GitHub issue
 - **Three post types**: 🔖 Bookmark, 💬 Response, 📖 Read It Later
 - **Zero backend**: Static PWA → pre-filled GitHub issue → Action publishes it
 - **Installable & offline-capable**: Service worker caches the app shell
@@ -22,7 +24,7 @@ No app store, no backend of its own — just a static PWA hosted on GitHub Pages
 Share sheet (any app)
         │  title / text / url
         ▼
-PWA  share.html  ──(parse + pick type)──►  github.com/lqdev/luisquintanilla.me
+PWA  share.html  ──(parse + edit + pick type)──►  github.com/lqdev/luisquintanilla.me
         │                                    /issues/new?template=<type>.yml&<prefilled fields>
         ▼
 GitHub Action on the website repo ──► generates the post ──► opens a PR ──► merge ──► live
@@ -62,12 +64,17 @@ This is a PWA, so you install it from the browser (not an app store).
 
 1. While viewing any page (browser, reader app, etc.), tap **Share**
 2. Choose **GitHub Post Creator** from the share sheet
-3. Confirm the detected title/URL in the preview, then pick a post type:
+3. **Edit the title, URL, or notes** right in the app if you want, then pick a post type:
    - **🔖 Bookmark** — save a link with optional commentary
-   - **💬 Response** — reply to / comment on a link
+   - **💬 Response** — reply to / comment on a link (choose a response type)
    - **📖 Read It Later** — quickly stash a link to read later
-4. GitHub opens a pre-filled issue form — review and **Submit**
+4. GitHub opens a pre-filled issue form with your final values — just **Submit**
 5. The website's Action takes it from there (PR → merge → live)
+
+> **Why edit in the app instead of on GitHub?** GitHub's issue *forms* re-seed their fields
+> from the URL whenever the page re-renders, so edits typed *on GitHub* can snap back to the
+> original values. The app sidesteps that: finalize the fields here, then just submit the
+> pre-filled form on GitHub. The publishing Action is unchanged — it reads the issue body + label.
 
 > **Note (Android):** Web Share Target works once the app is **installed**. On iOS,
 > Safari does not support the Web Share *Target* API, so the installed icon acts mainly
@@ -105,16 +112,16 @@ This is a PWA, so you install it from the browser (not an app store).
 |-------------------|----------------------|--------------------|----------------------------------|-------------------------------------------------------------------|
 | 🔖 Bookmark       | `post-bookmark.yml`  | `[Bookmark]`       | `target_url`, `post_title`, `content` | Shared text becomes a Markdown blockquote in `content`       |
 | 💬 Response       | `post-response.yml`  | `[Response]`       | `target_url`, `post_title`, `content` | Same fields as Bookmark                                       |
-| 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | `url`, `url_title`               | `url_title` left blank → the site auto-fetches the page title; entries auto-expire |
+| 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | `url`, `url_title`               | Clear the Title field → the site auto-fetches the page title; entries auto-expire |
 
 ## Project Structure
 
 ```
 /
 ├── index.html      # Install / landing page
-├── share.html      # Share-target handler (Bookmark / Response / Read It Later)
+├── share.html      # Editable review screen + post-type buttons (Bookmark / Response / Read It Later)
 ├── app.js          # Install prompt + service worker registration
-├── share.js        # Parses shared content, builds pre-filled issue URLs
+├── share.js        # Parses the share, prefills editable fields, builds pre-filled issue URLs
 ├── styles.css      # Shared styles for both pages
 ├── manifest.json   # PWA manifest (name, icons, share_target)
 ├── sw.js           # Service worker (offline app-shell cache)
@@ -179,7 +186,7 @@ This app is intentionally hardcoded to my setup. The things to know if I ever ch
   and the three template filenames (`post-bookmark.yml`, `post-response.yml`,
   `add-read-later.yml`). These must match the issue-form templates in the website repo's
   `.github/ISSUE_TEMPLATE/`, including their field `id`s (`target_url`, `post_title`,
-  `content`, `url`, `url_title`).
+  `content`, `response_type`, `url`, `url_title`).
 - **Pages subpath** — `manifest.json` (`start_url`, `scope`, `id`, `share_target.action`)
   and `sw.js` cache paths assume the repo is served at `/github-post-pwa/`.
 
