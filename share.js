@@ -163,3 +163,10 @@ document.getElementById('readlater-btn').addEventListener('click', () => {
         url_title: title,
     });
 });
+
+window.shareFlow = {
+    currentValues,
+    openIssue,
+    params,
+    parsed,
+};

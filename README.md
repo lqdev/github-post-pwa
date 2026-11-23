@@ -4,7 +4,7 @@ A minimal, installable **Progressive Web App (PWA)** that turns your phone's (or
 desktop's) **Share** button into a one-tap shortcut for posting to my website,
 [luisquintanilla.me](https://github.com/lqdev/luisquintanilla.me).
 
-Share any page → tweak the title/URL/notes if you like → pick a post type → it opens a
+Share any page → tweak the title/URL/notes if you like → pick a post type or follow the site → it opens a
 **pre-filled GitHub issue**. A GitHub Action on the website repo then turns that issue into
 a published post via pull request. No app store, no backend of its own — just a static PWA
 hosted on GitHub Pages.
@@ -13,7 +13,8 @@ hosted on GitHub Pages.
 
 - **Quick Capture**: Post from any app via the native share sheet
 - **Edit before you post**: Tweak the title, URL, or notes in the app — your changes carry into the GitHub issue
-- **Three post types**: 🔖 Bookmark, 💬 Response, 📖 Read It Later
+- **Four post types**: 🔖 Bookmark, 💬 Response, ➕ Follow, 📖 Read It Later
+- **Mobile feed picker**: Select a discovered feed, enter one manually, or let the site's GitHub Action discover it
 - **Zero backend**: Static PWA → pre-filled GitHub issue → Action publishes it
 - **Installable & offline-capable**: Service worker caches the app shell
 - **No dependencies, no build step**: Pure HTML, CSS, and vanilla JavaScript
@@ -30,9 +31,11 @@ PWA  share.html  ──(parse + edit + pick type)──►  github.com/lqdev/lui
 GitHub Action on the website repo ──► generates the post ──► opens a PR ──► merge ──► live
 ```
 
-The PWA itself never talks to a server. It only constructs a GitHub "new issue" URL with
-the right [issue-form template](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository)
-and query parameters pre-filled. All the publishing automation lives in the website repo.
+The PWA has no backend of its own. For Follow, it may make a best-effort read of the
+shared page when that site permits CORS, but all publishing and fallback discovery run in
+the website repo. The handoff is a GitHub "new issue" URL with the right
+[issue-form template](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository)
+and query parameters pre-filled.
 
 ## Installation
 
@@ -67,6 +70,7 @@ This is a PWA, so you install it from the browser (not an app store).
 3. **Edit the title, URL, or notes** right in the app if you want, then pick a post type:
    - **🔖 Bookmark** — save a link with optional commentary
    - **💬 Response** — reply to / comment on a link (choose a response type)
+   - **➕ Follow** — choose a feed and add the site to the blogroll or podroll
    - **📖 Read It Later** — quickly stash a link to read later
 4. GitHub opens a pre-filled issue form with your final values — just **Submit**
 5. The website's Action takes it from there (PR → merge → live)
@@ -106,22 +110,48 @@ This is a PWA, so you install it from the browser (not an app store).
 > If you'd rather use the OS share sheet, install the app and share from the **Windows
 > share dialog** — most reliable in **Edge**.
 
+> **Optional — feed-aware mobile bookmarklet:** a browser bookmarklet can read feed links
+> from the live page (including feeds injected by JavaScript) and open the Follow picker:
+>
+> ```js
+> javascript:(function(){var p=new URL('https://lqdev.github.io/github-post-pwa/share.html');p.searchParams.set('intent','follow');p.searchParams.set('url',location.href);p.searchParams.set('title',document.title);document.querySelectorAll('link[rel~="alternate"][type],a[type]').forEach(function(e){var t=(e.getAttribute('type')||'').toLowerCase(),h=e.getAttribute('href');if(h&&h.trim()&&['application/rss+xml','application/atom+xml','application/feed+json'].includes(t)){try{var f=new URL(h,document.baseURI);p.searchParams.append('feed',f.href);p.searchParams.append('feed_title',e.getAttribute('title')||e.textContent.trim()||'Feed');}catch(_){}}});location.href=p.href;})();
+> ```
+
 ## Post Types
 
-| Action            | Issue template       | Issue title prefix | Pre-filled fields                | Notes                                                              |
-|-------------------|----------------------|--------------------|----------------------------------|-------------------------------------------------------------------|
-| 🔖 Bookmark       | `post-bookmark.yml`  | `[Bookmark]`       | `target_url`, `post_title`, `content` | Shared text becomes a Markdown blockquote in `content`       |
-| 💬 Response       | `post-response.yml`  | `[Response]`       | `target_url`, `post_title`, `content` | Same fields as Bookmark                                       |
-| 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | `url`, `url_title`               | Clear the Title field → the site auto-fetches the page title; entries auto-expire |
+| Action            | Issue template       | Issue title prefix | Pre-filled fields                              | Notes |
+|-------------------|----------------------|--------------------|------------------------------------------------|-------|
+| 🔖 Bookmark       | `post-bookmark.yml`  | `[Bookmark]`       | `target_url`, `post_title`, `content`           | Shared text becomes a Markdown blockquote in `content` |
+| 💬 Response       | `post-response.yml`  | `[Response]`       | `target_url`, `post_title`, `content`           | Same fields as Bookmark |
+| ➕ Follow         | `follow.yml`         | `[Follow]`         | `feed_url` (optional), `site_url`, `site_title`, `roll` | A feed is mandatory; a missing `feed_url` asks the site's Action to discover one |
+| 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | `url`, `url_title`                             | Clear the Title field → the site auto-fetches the page title; entries auto-expire |
+
+### Follow feed selection
+
+The PWA shows feed candidates only from explicit handoff parameters or a best-effort
+CORS fetch of the shared page. It does not infer feed URLs from a site's hostname,
+platform-specific URL conventions, or a feed-looking path. Candidates are displayed
+with 44px touch targets, and a user can always enter a feed manually.
+
+If the browser cannot inspect the page, choose **Let GitHub find the feed**. The website
+Action then performs server-side autodiscovery. One feed creates the roll PR; multiple
+feeds are added as a checklist to the issue body, where exactly one must be selected
+(`/follow N` is also available as a comment fallback). If the Action
+cannot find any feed, it explains the failure and closes the issue as not planned. No
+blogroll/podroll entry is written without a feed.
 
 ## Project Structure
 
 ```
 /
 ├── index.html      # Install / landing page
-├── share.html      # Editable review screen + post-type buttons (Bookmark / Response / Read It Later)
+├── share.html      # Editable review screen + post-type buttons (including Follow)
 ├── app.js          # Install prompt + service worker registration
 ├── share.js        # Parses the share, prefills editable fields, builds pre-filled issue URLs
+├── follow-core.js  # Pure URL, handoff, and feed-discovery helpers
+├── follow.js       # Mobile follow panel and best-effort feed picker
+├── tests/
+│   └── follow-core.test.js # Node tests for the follow helpers
 ├── styles.css      # Shared styles for both pages
 ├── manifest.json   # PWA manifest (name, icons, share_target)
 ├── sw.js           # Service worker (offline app-shell cache)
@@ -142,6 +172,23 @@ This is a PWA, so you install it from the browser (not an app store).
 - **Dependencies**: none — no frameworks, no build tooling
 - **Target repo**: `lqdev/luisquintanilla.me` (consumes its issue-form templates)
 
+### Follow handoff contract
+
+Desktop extensions or bookmarklets can open the Follow panel directly:
+
+```text
+https://lqdev.github.io/github-post-pwa/share.html
+  ?intent=follow
+  &url=https%3A%2F%2Fexample.com%2Fpost
+  &title=Example+Blog
+  &feed=https%3A%2F%2Fexample.com%2Ffeed.xml
+```
+
+`feed` and `feed_title` may be repeated in parallel to provide several choices. `roll`
+accepts `blogroll` or `podroll`; other values default to `blogroll`. Only absolute
+`http(s)` URLs without credentials are accepted. The user has final control in the PWA
+before the GitHub issue is opened.
+
 ## Local Development
 
 Everything is static, but service workers and the PWA install flow require `http(s)`
@@ -156,6 +203,12 @@ npx serve
 ```
 
 Then open http://localhost:8080.
+
+Run the dependency-free follow helper tests with:
+
+```bash
+node --test tests/follow-core.test.js
+```
 
 **Testing the share flow without installing:** the share handler reads `title`, `url`, and
 `text` from the query string, so you can exercise it directly:
@@ -175,7 +228,7 @@ Hosted on **GitHub Pages** (Settings → Pages → Source: `main` / root). Pushi
 publishes to https://lqdev.github.io/github-post-pwa/.
 
 > **When you change cached assets** (HTML/CSS/JS/icons), bump `CACHE_NAME` in `sw.js`
-> (e.g. `github-post-v4` → `github-post-v5`) so already-installed clients pick up the new
+> (e.g. `github-post-v5` → `github-post-v6`) so already-installed clients pick up the new
 > version instead of serving the old cached shell.
 
 ## Configuration (personal setup notes)
@@ -183,10 +236,10 @@ publishes to https://lqdev.github.io/github-post-pwa/.
 This app is intentionally hardcoded to my setup. The things to know if I ever change it:
 
 - **Target repo & templates** — `share.js`: `TARGET_REPO = 'lqdev/luisquintanilla.me'`
-  and the three template filenames (`post-bookmark.yml`, `post-response.yml`,
+  and the template filenames (`post-bookmark.yml`, `post-response.yml`, `follow.yml`,
   `add-read-later.yml`). These must match the issue-form templates in the website repo's
   `.github/ISSUE_TEMPLATE/`, including their field `id`s (`target_url`, `post_title`,
-  `content`, `response_type`, `url`, `url_title`).
+  `content`, `response_type`, `feed_url`, `site_url`, `site_title`, `roll`, `url`, `url_title`).
 - **Pages subpath** — `manifest.json` (`start_url`, `scope`, `id`, `share_target.action`)
   and `sw.js` cache paths assume the repo is served at `/github-post-pwa/`.
 
@@ -205,7 +258,6 @@ This app is intentionally hardcoded to my setup. The things to know if I ever ch
 
 - Additional post types already templated on the site: **Note**, **Media**, **Playlist**,
   and **Reviews** (book / movie / music / product / business)
-- **Response sub-type** selector (reply / like / repost / RSVP)
 - Remember the last-used post type; optional offline queue for shares made while offline
 
 ## License
