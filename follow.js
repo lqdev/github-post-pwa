@@ -29,6 +29,8 @@
     let active = false;
     let discoveryStarted = false;
     let preFollowValues = null;
+    let discoveryGeneration = 0;
+    let discoveryController = null;
 
     titleInput.addEventListener('input', () => {
         titleEdited = true;
@@ -137,8 +139,7 @@
         feedChoices.appendChild(manual);
     }
 
-    async function fetchFeedLinks(url) {
-        const controller = new AbortController();
+    async function fetchFeedLinks(url, controller) {
         const timer = window.setTimeout(() => controller.abort(), 4000);
         try {
             const response = await fetch(url, {
@@ -166,18 +167,20 @@
         }
     }
 
-    async function discoverFromPage(pageUrl, siteUrl) {
+    async function discoverFromPage(pageUrl, siteUrl, generation, controller) {
         feedStatus.textContent = candidates.length
             ? 'Checking the page for more feeds…'
             : 'Checking the page for feeds…';
 
         const urls = [...new Set([pageUrl, siteUrl].filter(Boolean))];
         for (const url of urls) {
-            const found = await fetchFeedLinks(url);
+            const found = await fetchFeedLinks(url, controller);
+            if (generation !== discoveryGeneration) return;
             appendCandidates(found);
             if (found.length) break;
         }
 
+        if (generation !== discoveryGeneration) return;
         feedStatus.textContent = candidates.length
             ? `${candidates.length} feed option${candidates.length === 1 ? '' : 's'} found.`
             : 'The page could not be inspected. GitHub will find a feed after you create the issue.';
@@ -189,6 +192,11 @@
 
         const handoff = core.parseHandoff(shareFlow.params);
         const values = activeValues();
+        candidates = [];
+        feedSelectionEdited = false;
+        discoveryStarted = false;
+        manualFeedInput.hidden = true;
+        manualFeedInput.value = '';
         preFollowValues = { title: values.title, url: values.url };
         const originalSharedUrl = handoff.intent === 'follow'
             ? handoff.url || values.url
@@ -211,29 +219,25 @@
             'Review the site, title, feed, and roll. If feed discovery cannot run in the browser, GitHub will try after you submit.';
         pageInfo.textContent = 'A feed is required. The issue is closed without adding a roll entry if discovery finds none.';
 
-        const initialFeeds = handoff.feeds;
-        const sharedUrlIsFeed = core.looksLikeFeedUrl(originalSharedUrl);
-        if (sharedUrlIsFeed) {
-            const lowerUrl = originalSharedUrl.toLowerCase();
-            initialFeeds.unshift({
-                url: originalSharedUrl,
-                title: 'Shared feed',
-                type: lowerUrl.endsWith('.atom')
-                    ? 'atom'
-                    : lowerUrl.endsWith('.json')
-                        ? 'json'
-                        : 'rss',
-            });
-        }
-        appendCandidates(initialFeeds);
+        appendCandidates(handoff.feeds);
 
         if (!discoveryStarted) {
             discoveryStarted = true;
-            discoverFromPage(originalSharedUrl, siteUrl);
+            discoveryController?.abort();
+            discoveryController = new AbortController();
+            discoverFromPage(
+                originalSharedUrl,
+                siteUrl,
+                ++discoveryGeneration,
+                discoveryController
+            );
         }
     }
 
     function deactivateFollow() {
+        discoveryGeneration += 1;
+        discoveryController?.abort();
+        discoveryController = null;
         active = false;
         urlLabel.textContent = originalUrlLabel;
         notesField.hidden = false;

@@ -108,16 +108,6 @@
         return parts.length ? parts[parts.length - 1] : String(value || '').trim();
     }
 
-    function looksLikeFeedUrl(value) {
-        const url = parseHttpUrl(value);
-        if (!url) return false;
-
-        const path = url.pathname.toLowerCase();
-        return /\.(?:xml|rss|atom)(?:$|\/)/.test(path)
-            || /\/(?:feed|rss|atom)(?:\/|\.|$)/.test(path)
-            || path.endsWith('/feed.json');
-    }
-
     function parseHandoff(params) {
         const get = (name) => typeof params?.get === 'function' ? params.get(name) || '' : '';
         const getAll = (name) => typeof params?.getAll === 'function' ? params.getAll(name) : [];
@@ -183,7 +173,6 @@
         dedupeCandidates,
         deriveSiteUrl,
         extractFeedLinks,
-        looksLikeFeedUrl,
         parseHandoff,
         suggestSiteTitle,
     };

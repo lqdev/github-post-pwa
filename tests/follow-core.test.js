@@ -4,7 +4,6 @@ const assert = require('node:assert/strict');
 const {
     deriveSiteUrl,
     extractFeedLinks,
-    looksLikeFeedUrl,
     parseHandoff,
     suggestSiteTitle,
 } = require('../follow-core.js');
@@ -36,15 +35,6 @@ test('suggestSiteTitle keeps the final site segment', () => {
     assert.equal(suggestSiteTitle('A useful post - Example Blog'), 'Example Blog');
     assert.equal(suggestSiteTitle('A useful post · Example Blog'), 'Example Blog');
     assert.equal(suggestSiteTitle('Example Blog'), 'Example Blog');
-});
-
-test('looksLikeFeedUrl recognizes RSS, Atom, and JSON feed-looking paths', () => {
-    assert.equal(looksLikeFeedUrl('https://example.com/feed.xml'), true);
-    assert.equal(looksLikeFeedUrl('https://example.com/feed/'), true);
-    assert.equal(looksLikeFeedUrl('https://example.com/rss'), true);
-    assert.equal(looksLikeFeedUrl('https://example.com/feed.json'), true);
-    assert.equal(looksLikeFeedUrl('https://example.com/posts/hello'), false);
-    assert.equal(looksLikeFeedUrl('javascript:alert(1)'), false);
 });
 
 test('parseHandoff accepts repeated feeds and de-duplicates them', () => {

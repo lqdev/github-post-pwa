@@ -128,9 +128,9 @@ This is a PWA, so you install it from the browser (not an app store).
 
 ### Follow feed selection
 
-The PWA merges feed candidates only from explicit handoff parameters, a URL that is
-already a feed, or a best-effort CORS fetch of the shared page. It does not infer feed
-URLs from a site's hostname or platform-specific URL conventions. Candidates are displayed
+The PWA shows feed candidates only from explicit handoff parameters or a best-effort
+CORS fetch of the shared page. It does not infer feed URLs from a site's hostname,
+platform-specific URL conventions, or a feed-looking path. Candidates are displayed
 with 44px touch targets, and a user can always enter a feed manually.
 
 If the browser cannot inspect the page, choose **Let GitHub find the feed**. The website
