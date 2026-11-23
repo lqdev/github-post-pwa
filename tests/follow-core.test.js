@@ -71,13 +71,11 @@ test('parseHandoff accepts repeated feeds and de-duplicates them', () => {
                 url: 'https://example.com/feed.xml',
                 title: 'All posts',
                 type: 'rss',
-                guessed: false,
             },
             {
                 url: 'https://example.com/notes.xml',
                 title: 'Notes',
                 type: 'rss',
-                guessed: false,
             },
         ],
     });
@@ -137,13 +135,11 @@ test('extractFeedLinks resolves extension-parity feed links and ignores HTML lin
             url: 'https://example.com/blog/feed.xml',
             title: 'All posts',
             type: 'rss',
-            guessed: false,
         },
         {
             url: 'https://example.com/feed.json',
             title: 'JSON feed',
             type: 'json',
-            guessed: false,
         },
     ]);
 });

@@ -223,7 +223,6 @@
                     : lowerUrl.endsWith('.json')
                         ? 'json'
                         : 'rss',
-                guessed: false,
             });
         }
         appendCandidates(initialFeeds);

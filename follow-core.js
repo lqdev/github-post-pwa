@@ -38,7 +38,7 @@
         return 'rss';
     }
 
-    function candidate(url, title, type, guessed = false) {
+    function candidate(url, title, type) {
         const parsed = parseHttpUrl(url);
         if (!parsed) return null;
 
@@ -46,7 +46,6 @@
             url: parsed.href,
             title: String(title || 'Feed').trim() || 'Feed',
             type: feedType(type),
-            guessed: Boolean(guessed),
         };
     }
 
