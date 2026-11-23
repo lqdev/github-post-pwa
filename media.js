@@ -1,6 +1,6 @@
-// Media screen: collect the title, caption, orientation and tags in the app, then open a
-// blank GitHub issue with that text written in. The photo or video itself is added on
-// GitHub, because only GitHub's own editor can upload files.
+// Media screen: collect the title, required caption and tags in the app, then open a blank
+// GitHub issue with that text written in. The photo or video itself is added on GitHub,
+// because only GitHub's own editor can upload files.
 
 (function () {
     'use strict';
@@ -12,7 +12,6 @@
     const titleInput = document.getElementById('m-title');
     const captionInput = document.getElementById('m-caption');
     const tagsInput = document.getElementById('m-tags');
-    const orientationInputs = Array.from(document.querySelectorAll('input[name="media-orientation"]'));
     const status = document.getElementById('media-status');
     const restoreButton = document.getElementById('media-restore-btn');
     const store = drafts.createDraftStore(drafts.deviceStorage(), 'github-post:draft:media');
@@ -21,7 +20,6 @@
         return {
             title: titleInput.value.trim(),
             caption: captionInput.value,
-            orientation: orientationInputs.find((input) => input.checked)?.value || '',
             tags: tagsInput.value,
         };
     }
@@ -30,13 +28,10 @@
         titleInput.value = saved.title || '';
         captionInput.value = saved.caption || '';
         tagsInput.value = saved.tags || '';
-        for (const input of orientationInputs) {
-            input.checked = input.value === (saved.orientation || '');
-        }
     }
 
     function hasText(post) {
-        return Boolean(post.title || post.caption.trim() || post.tags.trim() || post.orientation);
+        return Boolean(post.title || post.caption.trim() || post.tags.trim());
     }
 
     // Problems are shown in red; everything else in the neutral info colour.
@@ -58,16 +53,18 @@
     for (const input of [titleInput, captionInput, tagsInput]) {
         input.addEventListener('input', onEdit);
     }
-    for (const input of orientationInputs) {
-        input.addEventListener('change', onEdit);
-    }
-
     document.getElementById('media-submit-btn').addEventListener('click', () => {
         const post = values();
         if (!post.title) {
             titleInput.classList.add('invalid');
             titleInput.focus();
             say('A title is required.');
+            return;
+        }
+        if (!post.caption.trim()) {
+            captionInput.classList.add('invalid');
+            captionInput.focus();
+            say('A caption is required. It keeps the media issue from being published empty.');
             return;
         }
 

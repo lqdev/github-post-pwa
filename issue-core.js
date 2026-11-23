@@ -69,10 +69,10 @@
             label: 'media',
             titlePrefix: '[Media] ',
             delivery: 'blank',
-            required: ['title'],
-            // Files can only be attached on GitHub. The content section is written last so
-            // that a file added at the end of the text lands inside it, and it has no
-            // placeholder because whatever is in that section gets published.
+            required: ['title', 'caption'],
+            // Files can only be attached on GitHub. A caption preserves the template's
+            // required Content and Attachments field in the blank-issue handoff. The content
+            // section is written last so a file added at the end lands inside it.
             fields: [
                 ['Title', 'title'],
                 ['Orientation (Optional)', 'orientation', 'None'],

@@ -87,7 +87,7 @@ Open **GitHub Post Creator** from your home screen:
 - **📝 Note** — write a title, the note, and optional tags, then **Create note issue**. GitHub
   opens the note form filled in. Your draft is kept on the device as you type; after sending,
   **Restore the last note I sent** brings it back if something went wrong on GitHub.
-- **📷 Media** — enter a title, optional caption, orientation, and tags, then **Continue to
+- **📷 Media** — enter a title, caption, and optional tags, then **Continue to
   GitHub**. A blank issue opens with all of that written in. Files can only be uploaded by
   GitHub's own editor, so the last step happens there: tap at the very end of the text, add
   your photo or video, wait for the upload to finish, then **Create**.
@@ -155,7 +155,7 @@ title and tags filled, and you paste the content into its Content box.
 | ➕ Follow         | `follow.yml`         | `[Follow]`         | Blank issue  | Feed URL (optional), Site URL, Title, Roll      | A feed is mandatory; an empty Feed URL asks the site's Action to discover one |
 | 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | Styled form  | `url`, `url_title`                             | Clear the Title field → the site auto-fetches the page title; entries auto-expire |
 | 📝 Note           | `post-note.yml`      | `[Note]`           | Styled form  | `post_title`, `content`, `tags`                 | Started from the home screen; needs a title and at least 3 characters of content |
-| 📷 Media          | `post-media.yml`     | `[Media]`          | Blank issue  | Title, Orientation, Tags, Content and Attachments (caption) | Started from the home screen; the file itself is added on GitHub |
+| 📷 Media          | `post-media.yml`     | `[Media]`          | Blank issue  | Title, Tags, Content and Attachments (caption); Orientation is `None` | The file itself is added on GitHub; the site currently does not apply its Orientation field |
 
 ### How posts reach GitHub
 
@@ -165,7 +165,7 @@ the app hands a post over in one of two ways, chosen per post type in `issue-cor
 - **Styled form** (`template=<type>.yml&<field id>=<value>`) — used when every field the app
   sends is a text box. GitHub shows the usual form, pre-filled.
 - **Blank issue** (`title=…&labels=<type>&body=<issue text>`) — used when the form has
-  dropdowns (Response Type, RSVP Status, Roll, Orientation) or needs files (Media). The app
+  dropdowns (Response Type, RSVP Status, Roll) or needs files (Media). The app
   writes the same text the form would have produced, one `### <Field label>` section per
   field, and pre-selects the label. There is nothing to choose on GitHub; just tap **Create**
   (for Media, after adding the file). Media writes its `Content and Attachments` section

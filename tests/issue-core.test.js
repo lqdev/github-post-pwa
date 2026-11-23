@@ -151,7 +151,6 @@ test('a media post puts the content section last so an added file lands inside i
     const issue = buildIssue('media', {
         title: 'Castle of Shed Tears',
         caption: 'Spotted at WNDR Chicago',
-        orientation: 'portrait',
         tags: 'art, chicago',
     });
 
@@ -160,7 +159,7 @@ test('a media post puts the content section last so an added file lands inside i
         labels: 'media',
         body: [
             '### Title', 'Castle of Shed Tears',
-            '### Orientation (Optional)', 'portrait',
+            '### Orientation (Optional)', 'None',
             '### Slug (Optional)', '_No response_',
             '### Tags (Optional)', 'art,chicago',
             '### Content and Attachments', 'Spotted at WNDR Chicago',
@@ -171,22 +170,16 @@ test('a media post puts the content section last so an added file lands inside i
     const attachment = '<img width="1536" height="1150" alt="Image" src="https://github.com/user-attachments/assets/abc" />';
     const submitted = `${issue.body}\n\n${attachment}\n`;
     assert.equal(read(submitted, 'Content and Attachments'), `Spotted at WNDR Chicago\n\n${attachment}`);
-    assert.equal(read(submitted, 'Orientation (Optional)'), 'portrait');
+    assert.equal(read(submitted, 'Orientation (Optional)'), 'None');
     assert.equal(read(submitted, 'Tags (Optional)'), 'art,chicago');
 });
 
-test('a media post without caption or orientation leaves room for the file only', () => {
-    const { body } = buildIssue('media', { title: 'Sunset', caption: '', orientation: '', tags: '' });
-
-    // No placeholder in the content section: anything there would be published.
-    assert.ok(body.endsWith('### Content and Attachments\n\n'));
-    // GitHub's form writes "None" for an Orientation left unselected.
-    assert.equal(read(body, 'Orientation (Optional)'), 'None');
-
-    const attachment = 'https://github.com/user-attachments/assets/abc';
-    assert.equal(read(`${body}${attachment}`, 'Content and Attachments'), attachment);
-
-    assert.throws(() => buildIssue('media', { title: 'Sunset', orientation: 'square' }), /Unknown Orientation/);
+test('a media post requires content and rejects invalid hidden orientation values', () => {
+    assert.throws(() => buildIssue('media', { title: 'Sunset', caption: '', tags: '' }), /Missing caption/);
+    assert.throws(
+        () => buildIssue('media', { title: 'Sunset', caption: 'A view', orientation: 'square' }),
+        /Unknown Orientation/
+    );
 });
 
 test('bad input is rejected instead of producing a broken issue', () => {
