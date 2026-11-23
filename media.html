@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2ea44f">
+    <title>New Media Post</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/webp" href="./icon.webp">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body class="page-share">
+    <div class="container">
+        <a class="home-link" href="./index.html">← Home</a>
+        <h1>New media post</h1>
+
+        <div class="fields">
+            <div class="field">
+                <label for="m-title">Title</label>
+                <input type="text" id="m-title" placeholder="e.g., Sunset at the beach">
+            </div>
+
+            <div class="field">
+                <label for="m-caption">Caption <span class="hint">(optional, Markdown supported)</span></label>
+                <textarea id="m-caption" rows="4" placeholder="Say something about it…"></textarea>
+            </div>
+
+            <fieldset class="choice-group">
+                <legend>Orientation</legend>
+                <div class="choice-grid">
+                    <label class="choice">
+                        <input type="radio" name="media-orientation" value="landscape">
+                        <span class="choice-body"><span class="choice-title">landscape</span></span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="media-orientation" value="portrait">
+                        <span class="choice-body"><span class="choice-title">portrait</span></span>
+                    </label>
+                    <label class="choice choice-wide">
+                        <input type="radio" name="media-orientation" value="" checked>
+                        <span class="choice-body"><span class="choice-title">Not set</span></span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div class="field">
+                <label for="m-tags">Tags <span class="hint">(optional)</span></label>
+                <input type="text" id="m-tags" placeholder="e.g., photography, travel" autocapitalize="none"
+                    autocomplete="off">
+            </div>
+        </div>
+
+        <p class="edit-note">📎 You add the photo or video on GitHub in the next step: tap at the very end
+            of the text, add your file, wait for the upload to finish, then tap Create.</p>
+
+        <p class="panel-status" id="media-status" aria-live="polite"></p>
+
+        <button class="btn btn-primary" id="media-submit-btn">
+            <span class="icon">📷</span>
+            Continue to GitHub
+        </button>
+        <button class="btn-link" type="button" id="media-restore-btn" hidden>Restore the last post I sent</button>
+        <button class="btn-link" type="button" id="media-clear-btn">Clear</button>
+
+        <div class="info">
+            💾 Your draft is saved on this device as you type. Files can only be uploaded by GitHub
+            itself, which is why that last step happens there.
+        </div>
+    </div>
+
+    <script src="./issue-core.js"></script>
+    <script src="./drafts.js"></script>
+    <script src="./media.js"></script>
+</body>
+
+</html>

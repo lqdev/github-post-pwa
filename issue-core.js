@@ -64,6 +64,26 @@
             required: ['title'],
             params: { title: 'post_title', content: 'content', tags: 'tags' },
         },
+        media: {
+            template: 'post-media.yml',
+            label: 'media',
+            titlePrefix: '[Media] ',
+            delivery: 'blank',
+            required: ['title'],
+            // Files can only be attached on GitHub. The content section is written last so
+            // that a file added at the end of the text lands inside it, and it has no
+            // placeholder because whatever is in that section gets published.
+            fields: [
+                ['Title', 'title'],
+                ['Orientation (Optional)', 'orientation', 'None'],
+                ['Slug (Optional)', 'slug'],
+                ['Tags (Optional)', 'tags'],
+                ['Content and Attachments', 'caption', ''],
+            ],
+            options: {
+                'Orientation (Optional)': ['landscape', 'portrait'],
+            },
+        },
         response: {
             template: 'post-response.yml',
             label: 'response',

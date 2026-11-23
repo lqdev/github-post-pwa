@@ -12,11 +12,11 @@ app store, no backend of its own — just a static PWA hosted on GitHub Pages.
 > **Live app:** https://lqdev.github.io/github-post-pwa/
 
 - **Quick Capture**: Post from any app via the native share sheet
-- **Start from the app**: Open it from your home screen to write a note or post a link
+- **Start from the app**: Open it from your home screen to write a note, post media, or post a link
 - **Edit before you post**: Tweak the title, URL, notes, or tags in the app — your changes carry into the GitHub issue
 - **Nothing to re-select on GitHub**: Response type, RSVP status, and Follow roll are picked in the app and written into the issue
-- **Five post types**: 📝 Note, 🔖 Bookmark, 💬 Response, ➕ Follow, 📖 Read It Later
-- **Drafts**: A note in progress is saved on the device, so an accidental close does not lose it
+- **Six post types**: 📝 Note, 📷 Media, 🔖 Bookmark, 💬 Response, ➕ Follow, 📖 Read It Later
+- **Drafts**: A note or media post in progress is saved on the device, so an accidental close does not lose it
 - **Mobile feed picker**: Select a discovered feed, enter one manually, or let the site's GitHub Action discover it
 - **Zero backend**: Static PWA → pre-filled GitHub issue → Action publishes it
 - **Installable & offline-capable**: Service worker caches the app shell
@@ -87,10 +87,14 @@ Open **GitHub Post Creator** from your home screen:
 - **📝 Note** — write a title, the note, and optional tags, then **Create note issue**. GitHub
   opens the note form filled in. Your draft is kept on the device as you type; after sending,
   **Restore the last note I sent** brings it back if something went wrong on GitHub.
+- **📷 Media** — enter a title, optional caption, orientation, and tags, then **Continue to
+  GitHub**. A blank issue opens with all of that written in. Files can only be uploaded by
+  GitHub's own editor, so the last step happens there: tap at the very end of the text, add
+  your photo or video, wait for the upload to finish, then **Create**.
 - **🔗 Link** — opens the same screen as sharing a page, with empty fields to paste a URL into.
 
 **Shortcuts:** long-press the app icon on Android (or right-click it on the Windows taskbar)
-for **New note** and **Post a link**, which jump straight to that screen. They come from
+for **New note**, **New media post**, and **Post a link**, which jump straight to that screen. They come from
 `shortcuts` in `manifest.json`. After a release that changes them, an installed app can take
 a day or so to pick them up; reinstalling updates them immediately. iOS does not show them.
 
@@ -151,6 +155,7 @@ title and tags filled, and you paste the content into its Content box.
 | ➕ Follow         | `follow.yml`         | `[Follow]`         | Blank issue  | Feed URL (optional), Site URL, Title, Roll      | A feed is mandatory; an empty Feed URL asks the site's Action to discover one |
 | 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | Styled form  | `url`, `url_title`                             | Clear the Title field → the site auto-fetches the page title; entries auto-expire |
 | 📝 Note           | `post-note.yml`      | `[Note]`           | Styled form  | `post_title`, `content`, `tags`                 | Started from the home screen; needs a title and at least 3 characters of content |
+| 📷 Media          | `post-media.yml`     | `[Media]`          | Blank issue  | Title, Orientation, Tags, Content and Attachments (caption) | Started from the home screen; the file itself is added on GitHub |
 
 ### How posts reach GitHub
 
@@ -160,9 +165,11 @@ the app hands a post over in one of two ways, chosen per post type in `issue-cor
 - **Styled form** (`template=<type>.yml&<field id>=<value>`) — used when every field the app
   sends is a text box. GitHub shows the usual form, pre-filled.
 - **Blank issue** (`title=…&labels=<type>&body=<issue text>`) — used when the form has
-  dropdowns (Response Type, RSVP Status, Roll). The app writes the same text the form would
-  have produced, one `### <Field label>` section per field, and pre-selects the label. There
-  is nothing to choose on GitHub; just tap **Create**.
+  dropdowns (Response Type, RSVP Status, Roll, Orientation) or needs files (Media). The app
+  writes the same text the form would have produced, one `### <Field label>` section per
+  field, and pre-selects the label. There is nothing to choose on GitHub; just tap **Create**
+  (for Media, after adding the file). Media writes its `Content and Attachments` section
+  last, so a file added at the end of the text lands inside it.
 
 The publishing Actions cannot tell the two apart: they only check the issue **label** and
 read the `### <Field label>` sections of the issue text. The issue templates themselves are
@@ -193,12 +200,14 @@ blogroll/podroll entry is written without a feed.
 ├── index.html      # Home: post-type tiles, plus install instructions when not installed
 ├── share.html      # Editable review screen + post-type buttons, Response and Follow panels
 ├── note.html       # Note screen
+├── media.html      # Media screen
 ├── app.js          # Install prompt + service worker registration
 ├── issue-core.js   # Post-type registry: turns the entered values into a GitHub "new issue" link
 ├── drafts.js       # Saves a draft on the device while typing
 ├── share.js        # Parses the share, prefills editable fields, opens Bookmark / Read It Later
 ├── response.js     # Response panel: response type and RSVP status
 ├── note.js         # Note screen: validation, drafts, long-note fallback
+├── media.js        # Media screen: validation, drafts, blank-issue handoff
 ├── follow-core.js  # Pure URL, handoff, and feed-discovery helpers
 ├── follow.js       # Mobile follow panel and best-effort feed picker
 ├── scripts/
@@ -327,8 +336,10 @@ This app is intentionally hardcoded to my setup. The things to know if I ever ch
 
 ## Roadmap
 
-- Additional post types already templated on the site: **Note**, **Media**, **Playlist**,
-  and **Reviews** (book / movie / music / product / business)
+- Additional post types already templated on the site: **Playlist** and **Reviews**
+  (book / movie / music / product / business) — each is a new entry in `issue-core.js`'s
+  `FORMS` plus a small screen
+- Share a photo straight into the app (needs a way to upload files without GitHub's editor)
 - Remember the last-used post type; optional offline queue for shares made while offline
 
 ## License

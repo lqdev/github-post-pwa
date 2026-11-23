@@ -144,7 +144,8 @@ body.page-install {
     font-size: 1.8rem;
 }
 
-.tile-wide {
+.tile-wide,
+.choice-wide {
     grid-column: 1 / -1;
 }
 
