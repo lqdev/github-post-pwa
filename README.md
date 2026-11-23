@@ -135,7 +135,8 @@ with 44px touch targets, and a user can always enter a feed manually.
 
 If the browser cannot inspect the page, choose **Let GitHub find the feed**. The website
 Action then performs server-side autodiscovery. One feed creates the roll PR; multiple
-feeds are shown in an issue comment where exactly one must be selected. If the Action
+feeds are added as a checklist to the issue body, where exactly one must be selected
+(`/follow N` is also available as a comment fallback). If the Action
 cannot find any feed, it explains the failure and closes the issue as not planned. No
 blogroll/podroll entry is written without a feed.
 
