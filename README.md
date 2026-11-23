@@ -114,7 +114,7 @@ This is a PWA, so you install it from the browser (not an app store).
 > from the live page (including feeds injected by JavaScript) and open the Follow picker:
 >
 > ```js
-> javascript:(function(){var p=new URL('https://lqdev.github.io/github-post-pwa/share.html');p.searchParams.set('intent','follow');p.searchParams.set('url',location.href);p.searchParams.set('title',document.title);document.querySelectorAll('link[rel~="alternate"][type],a[type]').forEach(function(e){var t=(e.getAttribute('type')||'').toLowerCase();if(['application/rss+xml','application/atom+xml','application/feed+json'].includes(t)){try{var f=new URL(e.getAttribute('href')||'',location.href);p.searchParams.append('feed',f.href);p.searchParams.append('feed_title',e.getAttribute('title')||e.textContent.trim()||'Feed');}catch(_){}}});location.href=p.href;})();
+> javascript:(function(){var p=new URL('https://lqdev.github.io/github-post-pwa/share.html');p.searchParams.set('intent','follow');p.searchParams.set('url',location.href);p.searchParams.set('title',document.title);document.querySelectorAll('link[rel~="alternate"][type],a[type]').forEach(function(e){var t=(e.getAttribute('type')||'').toLowerCase(),h=e.getAttribute('href');if(h&&h.trim()&&['application/rss+xml','application/atom+xml','application/feed+json'].includes(t)){try{var f=new URL(h,document.baseURI);p.searchParams.append('feed',f.href);p.searchParams.append('feed_title',e.getAttribute('title')||e.textContent.trim()||'Feed');}catch(_){}}});location.href=p.href;})();
 > ```
 
 ## Post Types

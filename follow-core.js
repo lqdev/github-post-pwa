@@ -116,9 +116,13 @@
         const roll = get('roll').toLowerCase();
 
         const feeds = [];
+        const seen = new Set();
         for (let index = 0; index < feedUrls.length && feeds.length < 20; index += 1) {
             const feed = candidate(feedUrls[index], feedTitles[index] || '', '');
-            if (feed) feeds.push(feed);
+            if (feed && !seen.has(feed.url)) {
+                seen.add(feed.url);
+                feeds.push(feed);
+            }
         }
 
         return {
@@ -126,7 +130,7 @@
             url: parseHttpUrl(get('url'))?.href || '',
             title: get('title').trim(),
             roll: roll === 'podroll' ? 'podroll' : 'blogroll',
-            feeds: dedupeCandidates(feeds),
+            feeds,
         };
     }
 

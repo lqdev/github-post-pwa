@@ -102,6 +102,10 @@
 
     function renderFeedChoices() {
         const selectedValue = feedChoices.querySelector('input[name="follow-feed"]:checked')?.value;
+        const focusedValue = feedChoices.contains(document.activeElement)
+            && document.activeElement instanceof HTMLInputElement
+            ? document.activeElement.value
+            : '';
         feedChoices.replaceChildren();
 
         candidates.forEach((feed, index) => {
@@ -137,15 +141,26 @@
             manual.querySelector('input').checked = true;
         }
         feedChoices.appendChild(manual);
+
+        if (focusedValue) {
+            const replacement = Array.from(
+                feedChoices.querySelectorAll('input[name="follow-feed"]')
+            ).find((input) => input.value === focusedValue);
+            if (replacement) replacement.focus({ preventScroll: true });
+        }
     }
 
-    async function fetchFeedLinks(url, controller) {
-        const timer = window.setTimeout(() => controller.abort(), 4000);
+    async function fetchFeedLinks(url, discoveryController) {
+        const attemptController = new AbortController();
+        const abortAttempt = () => attemptController.abort();
+        const timer = window.setTimeout(abortAttempt, 4000);
+        discoveryController.signal.addEventListener('abort', abortAttempt, { once: true });
+        if (discoveryController.signal.aborted) attemptController.abort();
         try {
             const response = await fetch(url, {
                 credentials: 'omit',
                 redirect: 'follow',
-                signal: controller.signal,
+                signal: attemptController.signal,
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -164,6 +179,7 @@
             return [];
         } finally {
             window.clearTimeout(timer);
+            discoveryController.signal.removeEventListener('abort', abortAttempt);
         }
     }
 
@@ -208,7 +224,9 @@
 
         if (!titleEdited && suggestedTitle) titleInput.value = suggestedTitle;
         if (siteUrl) urlInput.value = siteUrl;
-        if (handoff.roll) rollInput.value = handoff.roll;
+        if (handoff.intent === 'follow' && handoff.roll) {
+            rollInput.value = handoff.roll;
+        }
 
         urlLabel.textContent = 'Site URL';
         notesField.hidden = true;
@@ -219,7 +237,7 @@
             'Review the site, title, feed, and roll. If feed discovery cannot run in the browser, GitHub will try after you submit.';
         pageInfo.textContent = 'A feed is required. The issue is closed without adding a roll entry if discovery finds none.';
 
-        appendCandidates(handoff.feeds);
+        appendCandidates(handoff.intent === 'follow' ? handoff.feeds : []);
 
         if (!discoveryStarted) {
             discoveryStarted = true;
@@ -253,6 +271,7 @@
         const url = new URL(window.location.href);
         url.searchParams.delete('intent');
         window.history.replaceState(null, '', url);
+        shareFlow.params.delete('intent');
     }
 
     document.getElementById('follow-btn').addEventListener('click', activateFollow);

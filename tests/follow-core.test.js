@@ -91,6 +91,21 @@ test('parseHandoff drops hostile, credentialed, and excess feed values', () => {
     assert.ok(handoff.feeds.every(({ url }) => url.startsWith('https://example.com/')));
 });
 
+test('parseHandoff applies its limit to unique feed choices', () => {
+    const params = new URLSearchParams();
+    for (let index = 0; index < 25; index += 1) {
+        params.append('feed', `https://example.com/feed-${index % 3}.xml`);
+    }
+    params.append('feed', 'https://example.com/final.xml');
+
+    assert.deepEqual(parseHandoff(params).feeds.map(({ url }) => url), [
+        'https://example.com/feed-0.xml',
+        'https://example.com/feed-1.xml',
+        'https://example.com/feed-2.xml',
+        'https://example.com/final.xml',
+    ]);
+});
+
 test('extractFeedLinks resolves extension-parity feed links and ignores HTML links', () => {
     const elements = [
         {

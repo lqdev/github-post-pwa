@@ -341,14 +341,14 @@ body.page-install {
 
 .btn-primary {
     color: #fff;
-    background: #2ea44f;
-    border-color: #2ea44f;
+    background: #1f6d36;
+    border-color: #1f6d36;
     text-align: center;
 }
 
 .btn-primary:hover {
     color: #fff;
-    background: #2c974b;
+    background: #155b2d;
 }
 
 .btn-link {
