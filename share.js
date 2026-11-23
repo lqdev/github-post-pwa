@@ -1,7 +1,7 @@
-// Share target logic: parse the shared payload and open a pre-filled GitHub issue
-// on the website repo using the matching issue-form template.
+// Share target logic: parse the shared payload, let the user edit it, and hand the post to
+// GitHub as a ready-to-submit issue on the website repo (see issue-core.js).
 
-const TARGET_REPO = 'lqdev/luisquintanilla.me';
+const issueCore = window.IssueCore;
 
 // Non-global regex for membership tests (`.test()` is stateless without the /g flag).
 const URL_RE = /https?:\/\/[^\s]+/;
@@ -75,7 +75,7 @@ const pageInfo = document.getElementById('page-info');
 const titleInput = document.getElementById('f-title');
 const urlInput = document.getElementById('f-url');
 const notesInput = document.getElementById('f-notes');
-const responseTypeInput = document.getElementById('f-response-type');
+const tagsInput = document.getElementById('f-tags');
 
 // Prefill the editable fields from the parsed share. The user finalises the values here,
 // then just submits on GitHub — so GitHub's form re-seeding can't clobber their edits.
@@ -94,11 +94,29 @@ renderStatus();
 
 // --- Issue creation ---
 
-// Build and open a pre-filled GitHub issue on the matching issue-form template. Keeping
-// `template=` means GitHub shows the styled form; the values come from the edited fields.
-function openIssue(fields) {
-    const query = new URLSearchParams(fields).toString();
-    window.location.href = `https://github.com/${TARGET_REPO}/issues/new?${query}`;
+// Open the "new issue" page on GitHub for one post. `params` comes from
+// issueCore.buildIssue(): either a styled issue form (template=...) or a blank issue with
+// the text and label already written. Returns false when the link would be too long.
+function openIssue(params) {
+    const url = issueCore.issueUrl(params);
+    if (url.length > issueCore.MAX_URL_LENGTH) {
+        pageInfo.textContent = '⚠️ That is too much text to send to GitHub in one link. Shorten the notes and try again.';
+        return false;
+    }
+    window.location.href = url;
+    return true;
+}
+
+function buildAndOpenIssue(type, values, reportError) {
+    try {
+        return openIssue(issueCore.buildIssue(type, values));
+    } catch (error) {
+        if (!(error instanceof issueCore.IssueFieldError)) throw error;
+        const message = `⚠️ ${error.message}`;
+        if (reportError) reportError(message);
+        else pageInfo.textContent = message;
+        return false;
+    }
 }
 
 // Read the current (possibly edited) field values.
@@ -107,7 +125,7 @@ function currentValues() {
         title: titleInput.value.trim(),
         url: urlInput.value.trim(),
         notes: notesInput.value,
-        responseType: responseTypeInput.value,
+        tags: issueCore.normalizeTags(tagsInput.value),
     };
 }
 
@@ -125,48 +143,36 @@ urlInput.addEventListener('input', () => {
 });
 
 document.getElementById('bookmark-btn').addEventListener('click', () => {
-    const { title, url, notes } = currentValues();
+    const { title, url, notes, tags } = currentValues();
     if (!requireUrl(url)) return;
-    const postTitle = title || 'Shared Content';
-    openIssue({
-        template: 'post-bookmark.yml',
-        title: `[Bookmark] ${postTitle}`,
-        target_url: url,
-        post_title: postTitle,
-        content: notes,
+    buildAndOpenIssue('bookmark', {
+        title: title || 'Shared Content',
+        url,
+        notes,
+        tags,
     });
 });
 
-document.getElementById('response-btn').addEventListener('click', () => {
-    const { title, url, notes, responseType } = currentValues();
-    if (!requireUrl(url)) return;
-    const postTitle = title || 'Shared Content';
-    openIssue({
-        template: 'post-response.yml',
-        title: `[Response] ${postTitle}`,
-        response_type: responseType,
-        target_url: url,
-        post_title: postTitle,
-        content: notes,
-    });
-});
+// The 💬 Response button opens the Response panel; see response.js.
 
 document.getElementById('readlater-btn').addEventListener('click', () => {
     const { title, url } = currentValues();
     if (!requireUrl(url)) return;
     // url_title mirrors the editable Title field; if the user cleared it, the site
     // auto-fetches the real page title from the URL.
-    openIssue({
-        template: 'add-read-later.yml',
-        title: `[Read Later] ${title || url}`,
-        url: url,
-        url_title: title,
-    });
+    openIssue(issueCore.buildIssue('readLater', {
+        url,
+        title,
+        issueTitle: title || url,
+    }));
 });
 
 window.shareFlow = {
+    buildAndOpenIssue,
     currentValues,
     openIssue,
     params,
     parsed,
+    renderStatus,
+    requireUrl,
 };

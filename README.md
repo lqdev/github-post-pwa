@@ -5,15 +5,18 @@ desktop's) **Share** button into a one-tap shortcut for posting to my website,
 [luisquintanilla.me](https://github.com/lqdev/luisquintanilla.me).
 
 Share any page → tweak the title/URL/notes if you like → pick a post type or follow the site → it opens a
-**pre-filled GitHub issue**. A GitHub Action on the website repo then turns that issue into
-a published post via pull request. No app store, no backend of its own — just a static PWA
-hosted on GitHub Pages.
+**pre-filled GitHub issue**. Or open the app from your home screen and write a note. A GitHub
+Action on the website repo then turns that issue into a published post via pull request. No
+app store, no backend of its own — just a static PWA hosted on GitHub Pages.
 
 > **Live app:** https://lqdev.github.io/github-post-pwa/
 
 - **Quick Capture**: Post from any app via the native share sheet
-- **Edit before you post**: Tweak the title, URL, or notes in the app — your changes carry into the GitHub issue
-- **Four post types**: 🔖 Bookmark, 💬 Response, ➕ Follow, 📖 Read It Later
+- **Start from the app**: Open it from your home screen to write a note, post media, or post a link
+- **Edit before you post**: Tweak the title, URL, notes, or tags in the app — your changes carry into the GitHub issue
+- **Nothing to re-select on GitHub**: Response type, RSVP status, and Follow roll are picked in the app and written into the issue
+- **Six post types**: 📝 Note, 📷 Media, 🔖 Bookmark, 💬 Response, ➕ Follow, 📖 Read It Later
+- **Drafts**: A note or media post in progress is saved on the device, so an accidental close does not lose it
 - **Mobile feed picker**: Select a discovered feed, enter one manually, or let the site's GitHub Action discover it
 - **Zero backend**: Static PWA → pre-filled GitHub issue → Action publishes it
 - **Installable & offline-capable**: Service worker caches the app shell
@@ -27,15 +30,17 @@ Share sheet (any app)
         ▼
 PWA  share.html  ──(parse + edit + pick type)──►  github.com/lqdev/luisquintanilla.me
         │                                    /issues/new?template=<type>.yml&<prefilled fields>
+        │                                 or /issues/new?title=…&labels=<type>&body=<issue text>
         ▼
 GitHub Action on the website repo ──► generates the post ──► opens a PR ──► merge ──► live
 ```
 
 The PWA has no backend of its own. For Follow, it may make a best-effort read of the
 shared page when that site permits CORS, but all publishing and fallback discovery run in
-the website repo. The handoff is a GitHub "new issue" URL with the right
+the website repo. The handoff is a GitHub "new issue" URL: either the right
 [issue-form template](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository)
-and query parameters pre-filled.
+with its text fields pre-filled, or a blank issue with the text and label already written
+(see [How posts reach GitHub](#how-posts-reach-github)).
 
 ## Installation
 
@@ -67,18 +72,42 @@ This is a PWA, so you install it from the browser (not an app store).
 
 1. While viewing any page (browser, reader app, etc.), tap **Share**
 2. Choose **GitHub Post Creator** from the share sheet
-3. **Edit the title, URL, or notes** right in the app if you want, then pick a post type:
+3. **Edit the title, URL, notes, or tags** right in the app if you want, then pick a post type:
    - **🔖 Bookmark** — save a link with optional commentary
-   - **💬 Response** — reply to / comment on a link (choose a response type)
+   - **💬 Response** — reshare, star, reply to, or RSVP to a link (pick which on the next screen)
    - **➕ Follow** — choose a feed and add the site to the blogroll or podroll
    - **📖 Read It Later** — quickly stash a link to read later
-4. GitHub opens a pre-filled issue form with your final values — just **Submit**
+4. GitHub opens a ready-to-submit issue with your final values — just **Create** it
 5. The website's Action takes it from there (PR → merge → live)
+
+### Starting from the app
+
+Open **GitHub Post Creator** from your home screen:
+
+- **📝 Note** — write a title, the note, and optional tags, then **Create note issue**. GitHub
+  opens the note form filled in. Your draft is kept on the device as you type; after sending,
+  **Restore the last note I sent** brings it back if something went wrong on GitHub.
+- **📷 Media** — enter a title, caption, and optional tags, then **Continue to
+  GitHub**. A blank issue opens with all of that written in. Files can only be uploaded by
+  GitHub's own editor, so the last step happens there: tap at the very end of the text, add
+  your photo or video, wait for the upload to finish, then **Create**.
+- **🔗 Link** — opens the same screen as sharing a page, with empty fields to paste a URL into.
+
+**Shortcuts:** long-press the app icon on Android (or right-click it on the Windows taskbar)
+for **New note**, **New media post**, and **Post a link**, which jump straight to that screen. They come from
+`shortcuts` in `manifest.json`. After a release that changes them, an installed app can take
+a day or so to pick them up; reinstalling updates them immediately. iOS does not show them.
+
+A note travels to GitHub inside the link, and GitHub rejects very long links. If a note is
+too long, the app offers **Copy content and open GitHub** instead: the form opens with the
+title and tags filled, and you paste the content into its Content box.
 
 > **Why edit in the app instead of on GitHub?** GitHub's issue *forms* re-seed their fields
 > from the URL whenever the page re-renders, so edits typed *on GitHub* can snap back to the
 > original values. The app sidesteps that: finalize the fields here, then just submit the
 > pre-filled form on GitHub. The publishing Action is unchanged — it reads the issue body + label.
+> (Response and Follow open a plain blank issue rather than a form, so their text *can* be
+> edited on GitHub — just leave the `### Heading` lines alone.)
 
 > **Note (Android):** Web Share Target works once the app is **installed**. On iOS,
 > Safari does not support the Web Share *Target* API, so the installed icon acts mainly
@@ -119,12 +148,41 @@ This is a PWA, so you install it from the browser (not an app store).
 
 ## Post Types
 
-| Action            | Issue template       | Issue title prefix | Pre-filled fields                              | Notes |
-|-------------------|----------------------|--------------------|------------------------------------------------|-------|
-| 🔖 Bookmark       | `post-bookmark.yml`  | `[Bookmark]`       | `target_url`, `post_title`, `content`           | Shared text becomes a Markdown blockquote in `content` |
-| 💬 Response       | `post-response.yml`  | `[Response]`       | `target_url`, `post_title`, `content`           | Same fields as Bookmark |
-| ➕ Follow         | `follow.yml`         | `[Follow]`         | `feed_url` (optional), `site_url`, `site_title`, `roll` | A feed is mandatory; a missing `feed_url` asks the site's Action to discover one |
-| 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | `url`, `url_title`                             | Clear the Title field → the site auto-fetches the page title; entries auto-expire |
+| Action            | Issue template       | Issue title prefix | Handoff      | What the app fills in                          | Notes |
+|-------------------|----------------------|--------------------|--------------|------------------------------------------------|-------|
+| 🔖 Bookmark       | `post-bookmark.yml`  | `[Bookmark]`       | Styled form  | `target_url`, `post_title`, `content`, `tags`   | Shared text becomes a Markdown blockquote in `content` |
+| 💬 Response       | `post-response.yml`  | `[Response]`       | Blank issue  | Response Type, RSVP Status, Target URL, Title, Content, Tags | Type and RSVP status are picked on the Response screen |
+| ➕ Follow         | `follow.yml`         | `[Follow]`         | Blank issue  | Feed URL (optional), Site URL, Title, Roll      | A feed is mandatory; an empty Feed URL asks the site's Action to discover one |
+| 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | Styled form  | `url`, `url_title`                             | Clear the Title field → the site auto-fetches the page title; entries auto-expire |
+| 📝 Note           | `post-note.yml`      | `[Note]`           | Styled form  | `post_title`, `content`, `tags`                 | Started from the home screen; needs a title and at least 3 characters of content |
+| 📷 Media          | `post-media.yml`     | `[Media]`          | Blank issue  | Title, Tags, Content and Attachments (caption); Orientation is `None` | The file itself is added on GitHub; the site currently does not apply its Orientation field |
+
+### How posts reach GitHub
+
+GitHub can fill an issue form's **text boxes** from a link, but not its **dropdowns**. So
+the app hands a post over in one of two ways, chosen per post type in `issue-core.js`:
+
+- **Styled form** (`template=<type>.yml&<field id>=<value>`) — used when every field the app
+  sends is a text box. GitHub shows the usual form, pre-filled.
+- **Blank issue** (`title=…&labels=<type>&body=<issue text>`) — used when the form has
+  dropdowns (Response Type, RSVP Status, Roll) or needs files (Media). The app
+  writes the same text the form would have produced, one `### <Field label>` section per
+  field, and pre-selects the label. There is nothing to choose on GitHub; just tap **Create**
+  (for Media, after adding the file). Media writes its `Content and Attachments` section
+  last, so a file added at the end of the text lands inside it.
+
+The publishing Actions cannot tell the two apart: they only check the issue **label** and
+read the `### <Field label>` sections of the issue text. The issue templates themselves are
+untouched, so opening GitHub directly and picking a template works as before.
+
+The Actions also stop reading a field when they see a blank line followed by `###` or `---`.
+The PWA blocks those sequences in post content and shows an inline message instead of
+silently handing GitHub text that would publish truncated (and could leave a media
+attachment outside the field).
+
+Because the app mirrors the templates' field ids, labels, and dropdown choices, a change to
+a template in the website repo can break a handoff. `node scripts/check-templates.js`
+compares the two, and the **Checks** workflow runs it weekly.
 
 ### Follow feed selection
 
@@ -144,20 +202,35 @@ blogroll/podroll entry is written without a feed.
 
 ```
 /
-├── index.html      # Install / landing page
-├── share.html      # Editable review screen + post-type buttons (including Follow)
+├── index.html      # Home: post-type tiles, plus install instructions when not installed
+├── share.html      # Editable review screen + post-type buttons, Response and Follow panels
+├── note.html       # Note screen
+├── media.html      # Media screen
 ├── app.js          # Install prompt + service worker registration
-├── share.js        # Parses the share, prefills editable fields, builds pre-filled issue URLs
+├── issue-core.js   # Post-type registry: turns the entered values into a GitHub "new issue" link
+├── drafts.js       # Saves a draft on the device while typing
+├── share.js        # Parses the share, prefills editable fields, opens Bookmark / Read It Later
+├── response.js     # Response panel: response type and RSVP status
+├── note.js         # Note screen: validation, drafts, long-note fallback
+├── media.js        # Media screen: validation, drafts, blank-issue handoff
 ├── follow-core.js  # Pure URL, handoff, and feed-discovery helpers
 ├── follow.js       # Mobile follow panel and best-effort feed picker
+├── scripts/
+│   └── check-templates.js  # Compares issue-core.js with the website repo's issue templates
 ├── tests/
-│   └── follow-core.test.js # Node tests for the follow helpers
+│   ├── check-templates.test.js # Node tests for the template comparison
+│   ├── drafts.test.js          # Node tests for draft storage
+│   ├── follow-core.test.js     # Node tests for the follow helpers
+│   └── issue-core.test.js      # Node tests for the issue text and links
+├── .github/workflows/
+│   └── checks.yml  # Runs the tests on push/PR and the template comparison weekly
 ├── styles.css      # Shared styles for both pages
 ├── manifest.json   # PWA manifest (name, icons, share_target)
 ├── sw.js           # Service worker (offline app-shell cache)
 ├── icon.webp       # App icon
 ├── icon-192.webp   # 192×192 icon
 ├── icon-512.webp   # 512×512 icon
+├── shortcut-*.png  # Icons for the long-press shortcuts (one per shortcut)
 ├── LICENSE         # MIT
 └── README.md       # This file
 ```
@@ -167,7 +240,7 @@ blogroll/podroll entry is written without a feed.
 - **Type**: Installable, offline-capable Progressive Web App
 - **Share integration**: [Web Share Target API](https://developer.mozilla.org/en-US/docs/Web/Manifest/share_target)
   via `manifest.json` (`GET` → `share.html` with `title` / `text` / `url`)
-- **Service worker**: cache-first app shell (`sw.js`)
+- **Service worker**: network-first, with the cached app shell as the offline fallback (`sw.js`)
 - **Hosting**: GitHub Pages (`main` branch, root), served over HTTPS
 - **Dependencies**: none — no frameworks, no build tooling
 - **Target repo**: `lqdev/luisquintanilla.me` (consumes its issue-form templates)
@@ -204,10 +277,16 @@ npx serve
 
 Then open http://localhost:8080.
 
-Run the dependency-free follow helper tests with:
+Run the dependency-free tests with:
 
 ```bash
-node --test tests/follow-core.test.js
+node --test
+```
+
+Check that the app still matches the website repo's issue templates (needs network):
+
+```bash
+node scripts/check-templates.js
 ```
 
 **Testing the share flow without installing:** the share handler reads `title`, `url`, and
@@ -228,18 +307,21 @@ Hosted on **GitHub Pages** (Settings → Pages → Source: `main` / root). Pushi
 publishes to https://lqdev.github.io/github-post-pwa/.
 
 > **When you change cached assets** (HTML/CSS/JS/icons), bump `CACHE_NAME` in `sw.js`
-> (e.g. `github-post-v5` → `github-post-v6`) so already-installed clients pick up the new
-> version instead of serving the old cached shell.
+> (e.g. `github-post-v7` → `github-post-v8`) and add any new files to `urlsToCache`. The app
+> loads from the network whenever it is online, so a release shows up right away; the bump
+> refreshes the copy kept for offline use.
 
 ## Configuration (personal setup notes)
 
 This app is intentionally hardcoded to my setup. The things to know if I ever change it:
 
-- **Target repo & templates** — `share.js`: `TARGET_REPO = 'lqdev/luisquintanilla.me'`
-  and the template filenames (`post-bookmark.yml`, `post-response.yml`, `follow.yml`,
-  `add-read-later.yml`). These must match the issue-form templates in the website repo's
-  `.github/ISSUE_TEMPLATE/`, including their field `id`s (`target_url`, `post_title`,
-  `content`, `response_type`, `feed_url`, `site_url`, `site_title`, `roll`, `url`, `url_title`).
+- **Target repo & templates** — `issue-core.js`: `TARGET_REPO = 'lqdev/luisquintanilla.me'`
+  and the `FORMS` registry (one entry per post type: template filename, label, and either the
+  template field `id`s it pre-fills or the field **labels** and dropdown choices it writes).
+  These must match the issue-form templates in the website repo's `.github/ISSUE_TEMPLATE/`;
+  run `node scripts/check-templates.js` after changing either side.
+- **Blank issues must stay enabled** on the website repo (no `blank_issues_enabled: false` in
+  `.github/ISSUE_TEMPLATE/config.yml`) — Response and Follow rely on them.
 - **Pages subpath** — `manifest.json` (`start_url`, `scope`, `id`, `share_target.action`)
   and `sw.js` cache paths assume the repo is served at `/github-post-pwa/`.
 
@@ -247,17 +329,22 @@ This app is intentionally hardcoded to my setup. The things to know if I ever ch
 
 - **App doesn't appear in the share sheet** → It must be **installed** first, and the
   platform must support Web Share Target (Android/Chromium). iOS Safari doesn't support it.
-- **My changes aren't showing up** → Bump `CACHE_NAME` in `sw.js`, or uninstall/reinstall
-  the app and hard-refresh.
+- **My changes aren't showing up** → GitHub Pages can take a few minutes to publish. If the
+  app is offline it shows its saved copy; bump `CACHE_NAME` in `sw.js` to refresh that copy.
 - **Install option doesn't show** → PWAs require HTTPS (GitHub Pages provides it) or
   `localhost`. Make sure you're not on `file://`.
 - **Issue form fields are empty** → A template field `id` likely changed in the website
-  repo; update the field names in `share.js` to match.
+  repo; run `node scripts/check-templates.js` and update `FORMS` in `issue-core.js` to match.
+- **A Response or Follow issue was created but nothing happened** → Check the issue has its
+  label (`response` / `follow`) and that its `### Heading` lines were not edited on GitHub;
+  the Action comments on the issue when it cannot read a field.
 
 ## Roadmap
 
-- Additional post types already templated on the site: **Note**, **Media**, **Playlist**,
-  and **Reviews** (book / movie / music / product / business)
+- Additional post types already templated on the site: **Playlist** and **Reviews**
+  (book / movie / music / product / business) — each is a new entry in `issue-core.js`'s
+  `FORMS` plus a small screen
+- Share a photo straight into the app (needs a way to upload files without GitHub's editor)
 - Remember the last-used post type; optional offline queue for shares made while offline
 
 ## License

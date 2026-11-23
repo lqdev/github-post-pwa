@@ -1,14 +1,24 @@
-const CACHE_NAME = 'github-post-v6';
+const CACHE_NAME = 'github-post-v9';
 const urlsToCache = [
   '/github-post-pwa/',
   '/github-post-pwa/index.html',
   '/github-post-pwa/share.html',
+  '/github-post-pwa/note.html',
+  '/github-post-pwa/media.html',
   '/github-post-pwa/styles.css',
   '/github-post-pwa/app.js',
+  '/github-post-pwa/issue-core.js',
+  '/github-post-pwa/drafts.js',
+  '/github-post-pwa/note.js',
+  '/github-post-pwa/media.js',
   '/github-post-pwa/share.js',
+  '/github-post-pwa/response.js',
   '/github-post-pwa/follow-core.js',
   '/github-post-pwa/follow.js',
   '/github-post-pwa/manifest.json',
+  '/github-post-pwa/shortcut-note.png',
+  '/github-post-pwa/shortcut-media.png',
+  '/github-post-pwa/shortcut-link.png',
   '/github-post-pwa/icon.webp',
   '/github-post-pwa/icon-192.webp',
   '/github-post-pwa/icon-512.webp'
@@ -26,13 +36,26 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
+// Network first, so a new release never mixes a fresh page with stale cached scripts
+// ('no-cache' makes the browser check with the server instead of trusting its own copy).
+// The cache is only the offline fallback; the query string is ignored so a shared page
+// (share.html?title=...&url=...) still finds its cached copy.
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
+
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      })
+    (async () => {
+      const cached = () => caches.match(event.request, { ignoreSearch: true });
+
+      try {
+        const response = await fetch(event.request, { cache: 'no-cache' });
+        if (response.ok) return response;
+        return (await cached()) || response;
+      } catch {
+        return (await cached()) || Response.error();
+      }
+    })()
   );
 });
 

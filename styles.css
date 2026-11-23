@@ -110,6 +110,53 @@ body.page-install {
     font-weight: 600;
 }
 
+/* Home tiles (index.html) */
+
+.tile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.tile {
+    display: block;
+    min-height: 44px;
+    padding: 1rem 0.5rem;
+    border: 2px solid #e1e4e8;
+    border-radius: 10px;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.tile:hover,
+.tile:focus-visible {
+    border-color: #2ea44f;
+    background: #f6f8fa;
+}
+
+.tile .icon {
+    display: block;
+    margin: 0 0 0.25rem;
+    font-size: 1.8rem;
+}
+
+.tile-wide,
+.choice-wide {
+    grid-column: 1 / -1;
+}
+
+.tile-detail {
+    display: block;
+    margin-top: 0.15rem;
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
 /* ---------- Share target page (share.html) ---------- */
 
 .page-share .container {
@@ -125,6 +172,14 @@ body.page-install {
     margin-bottom: 1.5rem;
     color: #333;
     font-size: 1.8rem;
+}
+
+.home-link {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    color: #0969da;
+    font-size: 0.9rem;
+    text-decoration: none;
 }
 
 .btn {
@@ -219,7 +274,8 @@ body.page-install {
     min-height: 4.5rem;
 }
 
-.field input.invalid {
+.field input.invalid,
+.field textarea.invalid {
     border-color: #d1242f;
 }
 
@@ -238,29 +294,34 @@ body.page-install {
     display: none !important;
 }
 
-.follow-panel {
+.follow-panel,
+.response-panel {
     text-align: left;
 }
 
-.follow-panel h2 {
+.follow-panel h2,
+.response-panel h2 {
     font-size: 1.35rem;
     color: #333;
     margin-bottom: 0.4rem;
 }
 
-.follow-intro {
+.follow-intro,
+.panel-intro {
     color: #555;
     font-size: 0.9rem;
     margin-bottom: 1rem;
 }
 
-.feed-options {
+.feed-options,
+.choice-group {
     border: 0;
     padding: 0;
     margin: 0 0 0.85rem;
 }
 
-.feed-options legend {
+.feed-options legend,
+.choice-group legend {
     font-size: 0.85rem;
     font-weight: 600;
     color: #444;
@@ -272,7 +333,14 @@ body.page-install {
     gap: 0.65rem;
 }
 
-.feed-choice {
+.choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+}
+
+.feed-choice,
+.choice {
     display: flex;
     align-items: flex-start;
     gap: 0.7rem;
@@ -283,12 +351,14 @@ body.page-install {
     cursor: pointer;
 }
 
-.feed-choice:has(input:checked) {
+.feed-choice:has(input:checked),
+.choice:has(input:checked) {
     border-color: #2ea44f;
     background: #f0fff4;
 }
 
-.feed-choice input {
+.feed-choice input,
+.choice input {
     flex: 0 0 auto;
     width: 1.1rem;
     height: 1.1rem;
@@ -297,18 +367,41 @@ body.page-install {
 
 .feed-choice-body,
 .feed-choice-title,
-.feed-choice-url {
+.feed-choice-url,
+.choice-body,
+.choice-title,
+.choice-detail {
     display: block;
     min-width: 0;
 }
 
-.feed-choice-body {
+.feed-choice-body,
+.choice-body {
     flex: 1;
 }
 
-.feed-choice-title {
+.feed-choice-title,
+.choice-title {
     color: #333;
     font-weight: 600;
+}
+
+.choice-detail {
+    color: #666;
+    font-size: 0.8rem;
+    margin-top: 0.15rem;
+}
+
+.panel-status {
+    min-height: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: #d1242f;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.panel-status.is-info {
+    color: #666;
 }
 
 .feed-choice-url {

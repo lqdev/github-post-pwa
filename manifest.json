@@ -1,7 +1,7 @@
 {
   "name": "GitHub Post Creator",
   "short_name": "GitHub Post",
-  "description": "Create GitHub bookmarks, responses, follows, and read-it-later posts from any page",
+  "description": "Post notes, media, bookmarks, responses, follows, and read-it-later links to your site",
   "categories": ["productivity", "utilities"],
   "start_url": "/github-post-pwa/?source=pwa",
   "scope": "/github-post-pwa/",
@@ -34,5 +34,28 @@
       "url": "url"
     }
   },
+  "shortcuts": [
+    {
+      "name": "New note",
+      "short_name": "Note",
+      "description": "Write a note",
+      "url": "/github-post-pwa/note.html",
+      "icons": [{ "src": "./shortcut-note.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "New media post",
+      "short_name": "Media",
+      "description": "Post a photo, video, or audio",
+      "url": "/github-post-pwa/media.html",
+      "icons": [{ "src": "./shortcut-media.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Post a link",
+      "short_name": "Link",
+      "description": "Bookmark, respond to, save, or follow a link",
+      "url": "/github-post-pwa/share.html",
+      "icons": [{ "src": "./shortcut-link.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
   "prefer_related_applications": false
 }

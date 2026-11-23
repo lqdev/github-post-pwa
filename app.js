@@ -12,10 +12,9 @@ if ('serviceWorker' in navigator) {
         .catch(err => console.log('Service Worker registration failed', err));
 }
 
-// If the app is already installed (launched standalone), show the success state.
+// When launched as an installed app, the home tiles are all that is needed.
 if (window.matchMedia('(display-mode: standalone)').matches) {
     installContainer.style.display = 'none';
-    installedContainer.style.display = 'block';
 }
 
 // Capture the browser's install prompt so we can trigger it from our button.

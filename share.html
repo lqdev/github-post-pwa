@@ -8,11 +8,14 @@
     <title>Choose Post Type</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/webp" href="./icon.webp">
-    <link rel="stylesheet" href="./styles.css">
+    <!-- "?v=7": one-time cache-buster. Installs made before v7 serve these files from an old
+         cache, which would mix this page with the previous release's scripts and styles. -->
+    <link rel="stylesheet" href="./styles.css?v=7">
 </head>
 
 <body class="page-share">
     <div class="container">
+        <a class="home-link" href="./index.html">← Home</a>
         <h1>Create GitHub Post</h1>
 
         <div class="fields">
@@ -31,14 +34,10 @@
                 <textarea id="f-notes" rows="5" placeholder="Add a quote or commentary…"></textarea>
             </div>
 
-            <div class="field" id="response-type-field">
-                <label for="f-response-type">Response type <span class="hint">(for 💬 Response)</span></label>
-                <select id="f-response-type">
-                    <option value="reply">reply</option>
-                    <option value="reshare">reshare</option>
-                    <option value="star">star</option>
-                    <option value="rsvp">rsvp</option>
-                </select>
+            <div class="field" id="tags-field">
+                <label for="f-tags">Tags <span class="hint">(optional — used for Bookmark / Response)</span></label>
+                <input type="text" id="f-tags" placeholder="e.g., web, indieweb" autocapitalize="none"
+                    autocomplete="off">
             </div>
         </div>
 
@@ -66,6 +65,75 @@
                 Follow
             </button>
         </div>
+
+        <section class="response-panel" id="response-panel" hidden aria-labelledby="response-heading">
+            <h2 id="response-heading">Respond to this page</h2>
+            <p class="panel-intro">Pick how you are responding.</p>
+
+            <fieldset class="choice-group">
+                <legend>Response type</legend>
+                <div class="choice-grid">
+                    <label class="choice">
+                        <input type="radio" name="response-type" value="reshare" checked>
+                        <span class="choice-body">
+                            <span class="choice-title">🔁 reshare</span>
+                            <span class="choice-detail">Repost it</span>
+                        </span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="response-type" value="star">
+                        <span class="choice-body">
+                            <span class="choice-title">⭐ star</span>
+                            <span class="choice-detail">Like it</span>
+                        </span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="response-type" value="reply">
+                        <span class="choice-body">
+                            <span class="choice-title">💬 reply</span>
+                            <span class="choice-detail">Comment on it</span>
+                        </span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="response-type" value="rsvp">
+                        <span class="choice-body">
+                            <span class="choice-title">📅 rsvp</span>
+                            <span class="choice-detail">Event attendance</span>
+                        </span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <fieldset class="choice-group" id="rsvp-status-field" hidden>
+                <legend>RSVP status</legend>
+                <div class="choice-grid">
+                    <label class="choice">
+                        <input type="radio" name="rsvp-status" value="yes">
+                        <span class="choice-body"><span class="choice-title">yes</span></span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="rsvp-status" value="no">
+                        <span class="choice-body"><span class="choice-title">no</span></span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="rsvp-status" value="maybe">
+                        <span class="choice-body"><span class="choice-title">maybe</span></span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="rsvp-status" value="interested">
+                        <span class="choice-body"><span class="choice-title">interested</span></span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <p class="panel-status" id="response-status" aria-live="polite"></p>
+
+            <button class="btn btn-primary" id="response-submit-btn">
+                <span class="icon">💬</span>
+                Create response issue
+            </button>
+            <button class="btn-link" type="button" id="response-back-btn">Back to post types</button>
+        </section>
 
         <section class="follow-panel" id="follow-panel" hidden aria-labelledby="follow-heading">
             <h2 id="follow-heading">Follow this site</h2>
@@ -100,8 +168,10 @@
     </div>
 
     <script src="./follow-core.js"></script>
-    <script src="./share.js"></script>
-    <script src="./follow.js"></script>
+    <script src="./issue-core.js"></script>
+    <script src="./share.js?v=7"></script>
+    <script src="./response.js"></script>
+    <script src="./follow.js?v=7"></script>
 </body>
 
 </html>
