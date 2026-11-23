@@ -6,7 +6,6 @@ const {
     extractFeedLinks,
     looksLikeFeedUrl,
     parseHandoff,
-    platformFeeds,
     suggestSiteTitle,
 } = require('../follow-core.js');
 
@@ -46,25 +45,6 @@ test('looksLikeFeedUrl recognizes RSS, Atom, and JSON feed-looking paths', () =>
     assert.equal(looksLikeFeedUrl('https://example.com/feed.json'), true);
     assert.equal(looksLikeFeedUrl('https://example.com/posts/hello'), false);
     assert.equal(looksLikeFeedUrl('javascript:alert(1)'), false);
-});
-
-test('platformFeeds returns no-network guesses for known hosts', () => {
-    assert.deepEqual(
-        platformFeeds('https://alice.substack.com/p/a-post').map(({ url, guessed }) => ({ url, guessed })),
-        [{ url: 'https://alice.substack.com/feed', guessed: true }]
-    );
-    assert.deepEqual(
-        platformFeeds('https://medium.com/@alice/a-post').map(({ url }) => url),
-        ['https://medium.com/feed/@alice']
-    );
-    assert.deepEqual(
-        platformFeeds('https://social.example/@alice/123').map(({ url }) => url),
-        ['https://social.example/@alice.rss']
-    );
-    assert.deepEqual(
-        platformFeeds('https://github.com/octo/repo').map(({ url, type }) => ({ url, type })),
-        [{ url: 'https://github.com/octo/repo/releases.atom', type: 'atom' }]
-    );
 });
 
 test('parseHandoff accepts repeated feeds and de-duplicates them', () => {

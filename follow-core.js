@@ -119,51 +119,6 @@
             || path.endsWith('/feed.json');
     }
 
-    function platformFeeds(value) {
-        const url = parseHttpUrl(value);
-        if (!url) return [];
-
-        const host = url.hostname.toLowerCase().replace(/^www\./, '');
-        const segments = url.pathname.split('/').filter(Boolean);
-        const feeds = [];
-        const add = (href, title, type = 'application/rss+xml') => {
-            const item = candidate(href, title, type, true);
-            if (item) feeds.push(item);
-        };
-
-        if (host.endsWith('.substack.com')) {
-            add(`${url.origin}/feed`, 'Substack feed');
-        } else if (host === 'medium.com' && /^@/.test(segments[0] || '')) {
-            add(`${url.origin}/feed/${segments[0]}`, 'Medium feed');
-        } else if (host.endsWith('.medium.com')) {
-            add(`${url.origin}/feed`, 'Medium feed');
-        } else if (host.endsWith('.wordpress.com')) {
-            add(`${url.origin}/feed/`, 'WordPress.com feed');
-        } else if (host === 'reddit.com' && segments[0] === 'r' && segments[1]) {
-            add(`${url.origin}/r/${segments[1]}/.rss`, `${segments[1]} feed`);
-        } else if (host === 'github.com' && segments.length) {
-            if (segments.length > 1) {
-                add(`${url.origin}/${segments[0]}/${segments[1]}/releases.atom`,
-                    `${segments[1]} releases`, 'application/atom+xml');
-            } else {
-                add(`${url.origin}/${segments[0]}.atom`,
-                    `${segments[0]} activity`, 'application/atom+xml');
-            }
-        } else if (host === 'bsky.app' && segments[0] === 'profile' && segments[1]) {
-            add(`${url.origin}/profile/${segments[1]}/rss`, `${segments[1]} RSS feed`);
-        } else if (host.endsWith('.tumblr.com')) {
-            add(`${url.origin}/rss`, 'Tumblr feed');
-        } else if (host.endsWith('.blogspot.com')) {
-            add(`${url.origin}/feeds/posts/default`, 'Blogger feed');
-        } else if (host === 'dev.to' && segments[0]) {
-            add(`${url.origin}/feed/${segments[0]}`, `${segments[0]} feed`);
-        } else if (/^@/.test(segments[0] || '')) {
-            add(`${url.origin}/${segments[0]}.rss`, `${segments[0].slice(1)} RSS feed`);
-        }
-
-        return dedupeCandidates(feeds);
-    }
-
     function parseHandoff(params) {
         const get = (name) => typeof params?.get === 'function' ? params.get(name) || '' : '';
         const getAll = (name) => typeof params?.getAll === 'function' ? params.getAll(name) : [];
@@ -231,7 +186,6 @@
         extractFeedLinks,
         looksLikeFeedUrl,
         parseHandoff,
-        platformFeeds,
         suggestSiteTitle,
     };
 });

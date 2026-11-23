@@ -106,8 +106,7 @@
             const row = radioRow(
                 feed.url,
                 feed.title,
-                `${feed.type.toUpperCase()} · ${feed.url}`,
-                feed.guessed ? 'suggested' : ''
+                `${feed.type.toUpperCase()} · ${feed.url}`
             );
             if ((feedSelectionEdited && selectedValue === feed.url)
                 || (!feedSelectionEdited && index === 0)) {
@@ -227,9 +226,7 @@
                 guessed: false,
             });
         }
-        appendCandidates(initialFeeds.concat(
-            sharedUrlIsFeed ? [] : core.platformFeeds(originalSharedUrl)
-        ));
+        appendCandidates(initialFeeds);
 
         if (!discoveryStarted) {
             discoveryStarted = true;

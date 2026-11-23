@@ -128,10 +128,10 @@ This is a PWA, so you install it from the browser (not an app store).
 
 ### Follow feed selection
 
-The PWA merges feed candidates from a handoff, a URL that is already a feed, no-network
-platform conventions, and a best-effort CORS fetch of the shared page. Candidates are
-displayed with 44px touch targets; suggested URLs are labelled. A user can also enter a
-feed manually.
+The PWA merges feed candidates only from explicit handoff parameters, a URL that is
+already a feed, or a best-effort CORS fetch of the shared page. It does not infer feed
+URLs from a site's hostname or platform-specific URL conventions. Candidates are displayed
+with 44px touch targets, and a user can always enter a feed manually.
 
 If the browser cannot inspect the page, choose **Let GitHub find the feed**. The website
 Action then performs server-side autodiscovery. One feed creates the roll PR; multiple
