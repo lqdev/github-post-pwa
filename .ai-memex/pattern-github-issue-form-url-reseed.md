@@ -3,7 +3,7 @@ title: "Pattern: GitHub Issue-Form URL Prefill Re-Seeds on Turbo Re-Render"
 description: "Fields in a GitHub YAML issue *form* prefilled via URL query params snap back to the URL values when edited; finalise edits in the referrer app before handoff, or use a classic ?body= issue."
 entry_type: pattern
 published_date: "2026-07-23 16:10 -05:00"
-last_updated_date: "2026-07-23 16:10 -05:00"
+last_updated_date: "2026-11-23 10:00 -06:00"
 tags: "javascript, web, github, patterns"
 related_skill: ""
 source_project: "github-post-pwa"
@@ -109,8 +109,13 @@ Action regexes match those headings, so the query-param **field `id`s** must lin
 `target_url`→"Target URL", `post_title`→"Title", `content`→"Content (Optional)",
 `response_type`→"Response Type", `url`→"URL", `url_title`→"URL Title (Optional)".
 
-Dropdowns (e.g. `response_type`) prefill by the **exact option text** (case-sensitive) via
-the field id — `response_type=reshare`, not an index. Multi-selects repeat the param.
+**Correction (2026-11-23): dropdowns do not prefill.** An earlier version of this entry said
+dropdowns prefill by their exact option text. They do not: GitHub only fills `input` and
+`textarea` fields from the URL, and `dropdown` / `checkboxes` params are silently ignored
+(GitHub community discussion #5288, open since 2021). Dropdown `default:` values cannot be
+relied on either. When a form has dropdowns, skip the form: open a blank issue with
+`?title=&labels=&body=` and write the `### <Field label>` sections yourself. The Actions
+read the label and those sections, so they cannot tell the difference.
 
 ## Prevention
 

@@ -6,13 +6,14 @@
 
     const shareFlow = window.shareFlow;
     const core = window.FollowCore;
-    if (!shareFlow || !core) return;
+    const issueCore = window.IssueCore;
+    if (!shareFlow || !core || !issueCore) return;
 
     const titleInput = document.getElementById('f-title');
     const urlInput = document.getElementById('f-url');
     const urlLabel = document.querySelector('label[for="f-url"]');
     const notesField = document.getElementById('notes-field');
-    const responseTypeField = document.getElementById('response-type-field');
+    const tagsField = document.getElementById('tags-field');
     const postActions = document.getElementById('post-actions');
     const followPanel = document.getElementById('follow-panel');
     const feedChoices = document.getElementById('follow-feed-choices');
@@ -230,7 +231,7 @@
 
         urlLabel.textContent = 'Site URL';
         notesField.hidden = true;
-        responseTypeField.hidden = true;
+        tagsField.hidden = true;
         postActions.hidden = true;
         followPanel.hidden = false;
         document.querySelector('.edit-note').textContent =
@@ -259,7 +260,7 @@
         active = false;
         urlLabel.textContent = originalUrlLabel;
         notesField.hidden = false;
-        responseTypeField.hidden = false;
+        tagsField.hidden = false;
         postActions.hidden = false;
         followPanel.hidden = true;
         document.querySelector('.edit-note').textContent = originalEditNote;
@@ -320,15 +321,14 @@
             return;
         }
 
-        const fields = {
-            template: 'follow.yml',
-            title: `[Follow] ${title}`,
-            site_url: siteUrl,
-            site_title: title,
+        // The Roll dropdown on GitHub's form cannot be prefilled, so the app writes the
+        // issue text itself (see issue-core.js). An empty feed asks the site to discover one.
+        shareFlow.openIssue(issueCore.buildIssue('follow', {
+            title,
+            siteUrl,
+            feedUrl,
             roll: rollInput.value,
-        };
-        if (feedUrl) fields.feed_url = feedUrl;
-        shareFlow.openIssue(fields);
+        }));
     });
 
     urlInput.addEventListener('input', () => urlInput.classList.remove('invalid'));
