@@ -68,13 +68,16 @@
             return;
         }
 
-        shareFlow.openIssue(core.buildIssue('response', {
+        shareFlow.buildAndOpenIssue('response', {
             title: title || 'Shared Content',
             url,
             notes,
             tags,
             responseType,
             rsvpStatus,
-        }));
+        }, (message) => {
+            status.textContent = message;
+            document.getElementById('f-notes').focus();
+        });
     });
 })();

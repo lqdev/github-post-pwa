@@ -175,6 +175,11 @@ The publishing Actions cannot tell the two apart: they only check the issue **la
 read the `### <Field label>` sections of the issue text. The issue templates themselves are
 untouched, so opening GitHub directly and picking a template works as before.
 
+The Actions also stop reading a field when they see a blank line followed by `###` or `---`.
+The PWA blocks those sequences in post content and shows an inline message instead of
+silently handing GitHub text that would publish truncated (and could leave a media
+attachment outside the field).
+
 Because the app mirrors the templates' field ids, labels, and dropdown choices, a change to
 a template in the website repo can break a handoff. `node scripts/check-templates.js`
 compares the two, and the **Checks** workflow runs it weekly.

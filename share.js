@@ -107,6 +107,18 @@ function openIssue(params) {
     return true;
 }
 
+function buildAndOpenIssue(type, values, reportError) {
+    try {
+        return openIssue(issueCore.buildIssue(type, values));
+    } catch (error) {
+        if (!(error instanceof issueCore.IssueFieldError)) throw error;
+        const message = `⚠️ ${error.message}`;
+        if (reportError) reportError(message);
+        else pageInfo.textContent = message;
+        return false;
+    }
+}
+
 // Read the current (possibly edited) field values.
 function currentValues() {
     return {
@@ -133,12 +145,12 @@ urlInput.addEventListener('input', () => {
 document.getElementById('bookmark-btn').addEventListener('click', () => {
     const { title, url, notes, tags } = currentValues();
     if (!requireUrl(url)) return;
-    openIssue(issueCore.buildIssue('bookmark', {
+    buildAndOpenIssue('bookmark', {
         title: title || 'Shared Content',
         url,
         notes,
         tags,
-    }));
+    });
 });
 
 // The 💬 Response button opens the Response panel; see response.js.
@@ -156,6 +168,7 @@ document.getElementById('readlater-btn').addEventListener('click', () => {
 });
 
 window.shareFlow = {
+    buildAndOpenIssue,
     currentValues,
     openIssue,
     params,

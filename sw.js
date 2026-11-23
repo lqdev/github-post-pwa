@@ -45,8 +45,17 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(event.request, { cache: 'no-cache' })
-      .catch(() => caches.match(event.request, { ignoreSearch: true }))
+    (async () => {
+      const cached = () => caches.match(event.request, { ignoreSearch: true });
+
+      try {
+        const response = await fetch(event.request, { cache: 'no-cache' });
+        if (response.ok) return response;
+        return (await cached()) || response;
+      } catch {
+        return (await cached()) || Response.error();
+      }
+    })()
   );
 });
 

@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const {
+    IssueFieldError,
     MAX_URL_LENGTH,
     TARGET_REPO,
     buildIssue,
@@ -180,6 +181,44 @@ test('a media post requires content and rejects invalid hidden orientation value
         () => buildIssue('media', { title: 'Sunset', caption: 'A view', orientation: 'square' }),
         /Unknown Orientation/
     );
+});
+
+test('publishing text rejects delimiters that the site workflow cannot parse safely', () => {
+    const assertDelimiterError = (type, values) => {
+        assert.throws(
+            () => buildIssue(type, values),
+            (error) => error instanceof IssueFieldError
+                && /publishing workflow treats those lines as field separators/.test(error.message)
+        );
+    };
+
+    assertDelimiterError('response', {
+        title: 'Heading test',
+        url: 'https://example.com/',
+        responseType: 'reply',
+        notes: 'Intro\n\n### More detail\n\nLost text',
+    });
+    assertDelimiterError('media', {
+        title: 'Rule test',
+        caption: 'Intro\r\n\r\n---\r\nLost text',
+    });
+    assertDelimiterError('note', {
+        title: 'Note test',
+        content: 'Intro\n\n### More detail\n\nLost text',
+    });
+    assertDelimiterError('bookmark', {
+        title: 'Bookmark test',
+        url: 'https://example.com/',
+        notes: 'Intro\n\n---\nLost text',
+    });
+
+    // Single newlines and ordinary headings without the preceding blank line are safe.
+    assert.doesNotThrow(() => buildIssue('response', {
+        title: 'Inline heading',
+        url: 'https://example.com/',
+        responseType: 'reply',
+        notes: 'Intro\n### More detail',
+    }));
 });
 
 test('bad input is rejected instead of producing a broken issue', () => {

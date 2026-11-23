@@ -68,7 +68,18 @@
             return;
         }
 
-        const url = core.issueUrl(core.buildIssue('media', post));
+        let issue;
+        try {
+            issue = core.buildIssue('media', post);
+        } catch (error) {
+            if (!(error instanceof core.IssueFieldError)) throw error;
+            captionInput.classList.add('invalid');
+            captionInput.focus();
+            say(error.message);
+            return;
+        }
+
+        const url = core.issueUrl(issue);
         if (url.length > core.MAX_URL_LENGTH) {
             captionInput.classList.add('invalid');
             captionInput.focus();

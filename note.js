@@ -60,9 +60,18 @@
         return note;
     }
 
-    function openOnGitHub(note) {
+    function noteIssue(note) {
+        try {
+            return core.buildIssue('note', note);
+        } catch (error) {
+            if (!(error instanceof core.IssueFieldError)) throw error;
+            return showProblem(contentInput, error.message);
+        }
+    }
+
+    function openOnGitHub(params) {
         store.markSent();
-        window.location.href = core.issueUrl(core.buildIssue('note', note));
+        window.location.href = core.issueUrl(params);
     }
 
     function onEdit(event) {
@@ -84,20 +93,31 @@
     document.getElementById('note-submit-btn').addEventListener('click', () => {
         const note = validValues();
         if (!note) return;
+        const issue = noteIssue(note);
+        if (!issue) return;
+        const url = core.issueUrl(issue);
 
         // The note travels to GitHub inside the link, and GitHub rejects very long links.
-        if (core.issueUrl(core.buildIssue('note', note)).length > core.MAX_URL_LENGTH) {
+        if (url.length > core.MAX_URL_LENGTH) {
             say('This note is too long to send to GitHub in a link. Use the button below: it copies the content so you can paste it into the Content box on GitHub.');
             copyButton.hidden = false;
             return;
         }
 
-        openOnGitHub(note);
+        openOnGitHub(issue);
     });
 
     copyButton.addEventListener('click', async () => {
         const note = validValues();
         if (!note) return;
+        const issueWithoutContent = noteIssue({ ...note, content: '' });
+        if (!issueWithoutContent) return;
+        const fallbackUrl = core.issueUrl(issueWithoutContent);
+
+        if (fallbackUrl.length > core.MAX_URL_LENGTH) {
+            say('The title and tags are still too long without the content. Shorten the title or tags; your draft has not been marked sent.');
+            return;
+        }
 
         if (!copiedByHand) {
             try {
@@ -112,7 +132,7 @@
         }
 
         // Title and tags still arrive filled in; the content is pasted on GitHub.
-        openOnGitHub({ ...note, content: '' });
+        openOnGitHub(issueWithoutContent);
     });
 
     restoreButton.addEventListener('click', () => {

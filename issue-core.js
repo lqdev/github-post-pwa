@@ -29,6 +29,14 @@
 
     // What GitHub's form writes for an optional field that was left empty.
     const NO_RESPONSE = '_No response_';
+    const PUBLISHER_TEXT_FIELDS = new Set(['notes', 'content', 'caption']);
+
+    class IssueFieldError extends Error {
+        constructor(message) {
+            super(message);
+            this.name = 'IssueFieldError';
+        }
+    }
 
     // One entry per post type. Must match .github/ISSUE_TEMPLATE/<template> in TARGET_REPO;
     // scripts/check-templates.js compares the two.
@@ -156,6 +164,18 @@
         }
         if (form.prepare) values = form.prepare(values);
 
+        // The publishing workflows stop reading a field at a blank line followed by `###`
+        // or `---`. Keeping these as literal Markdown would silently discard everything
+        // after the delimiter (including a media attachment).
+        for (const name of PUBLISHER_TEXT_FIELDS) {
+            if (values[name] && /\n\n(?:###|---)/.test(values[name])) {
+                throw new IssueFieldError(
+                    'Post content cannot contain a blank line followed by "###" or "---". '
+                    + 'The publishing workflow treats those lines as field separators.'
+                );
+            }
+        }
+
         for (const name of form.required) {
             if (!values[name]) throw new Error(`Missing ${name} for ${type}`);
         }
@@ -194,6 +214,7 @@
         NO_RESPONSE,
         RSVP_STATUSES,
         TARGET_REPO,
+        IssueFieldError,
         buildIssue,
         issueUrl,
         normalizeTags,
