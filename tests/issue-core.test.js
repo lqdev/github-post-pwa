@@ -125,6 +125,28 @@ test('bookmark and read later still open their styled forms', () => {
     );
 });
 
+test('a note opens the styled note form with its text boxes filled', () => {
+    assert.deepEqual(
+        buildIssue('note', { title: 'Hello', content: 'First.\n\nSecond.', tags: 'rss, web' }),
+        {
+            template: 'post-note.yml',
+            title: '[Note] Hello',
+            post_title: 'Hello',
+            content: 'First.\n\nSecond.',
+            tags: 'rss,web',
+        }
+    );
+
+    // A note too long for a link is opened without its content, which is pasted on GitHub.
+    assert.deepEqual(buildIssue('note', { title: 'Hello', content: '' }), {
+        template: 'post-note.yml',
+        title: '[Note] Hello',
+        post_title: 'Hello',
+    });
+
+    assert.throws(() => buildIssue('note', { content: 'No title' }), /Missing title/);
+});
+
 test('bad input is rejected instead of producing a broken issue', () => {
     assert.throws(() => buildIssue('podcast', {}), /Unknown post type/);
     assert.throws(() => buildIssue('bookmark', { title: 'No link' }), /Missing url/);

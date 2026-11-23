@@ -5,16 +5,18 @@ desktop's) **Share** button into a one-tap shortcut for posting to my website,
 [luisquintanilla.me](https://github.com/lqdev/luisquintanilla.me).
 
 Share any page → tweak the title/URL/notes if you like → pick a post type or follow the site → it opens a
-**pre-filled GitHub issue**. A GitHub Action on the website repo then turns that issue into
-a published post via pull request. No app store, no backend of its own — just a static PWA
-hosted on GitHub Pages.
+**pre-filled GitHub issue**. Or open the app from your home screen and write a note. A GitHub
+Action on the website repo then turns that issue into a published post via pull request. No
+app store, no backend of its own — just a static PWA hosted on GitHub Pages.
 
 > **Live app:** https://lqdev.github.io/github-post-pwa/
 
 - **Quick Capture**: Post from any app via the native share sheet
+- **Start from the app**: Open it from your home screen to write a note or post a link
 - **Edit before you post**: Tweak the title, URL, notes, or tags in the app — your changes carry into the GitHub issue
 - **Nothing to re-select on GitHub**: Response type, RSVP status, and Follow roll are picked in the app and written into the issue
-- **Four post types**: 🔖 Bookmark, 💬 Response, ➕ Follow, 📖 Read It Later
+- **Five post types**: 📝 Note, 🔖 Bookmark, 💬 Response, ➕ Follow, 📖 Read It Later
+- **Drafts**: A note in progress is saved on the device, so an accidental close does not lose it
 - **Mobile feed picker**: Select a discovered feed, enter one manually, or let the site's GitHub Action discover it
 - **Zero backend**: Static PWA → pre-filled GitHub issue → Action publishes it
 - **Installable & offline-capable**: Service worker caches the app shell
@@ -78,6 +80,24 @@ This is a PWA, so you install it from the browser (not an app store).
 4. GitHub opens a ready-to-submit issue with your final values — just **Create** it
 5. The website's Action takes it from there (PR → merge → live)
 
+### Starting from the app
+
+Open **GitHub Post Creator** from your home screen:
+
+- **📝 Note** — write a title, the note, and optional tags, then **Create note issue**. GitHub
+  opens the note form filled in. Your draft is kept on the device as you type; after sending,
+  **Restore the last note I sent** brings it back if something went wrong on GitHub.
+- **🔗 Link** — opens the same screen as sharing a page, with empty fields to paste a URL into.
+
+**Shortcuts:** long-press the app icon on Android (or right-click it on the Windows taskbar)
+for **New note** and **Post a link**, which jump straight to that screen. They come from
+`shortcuts` in `manifest.json`. After a release that changes them, an installed app can take
+a day or so to pick them up; reinstalling updates them immediately. iOS does not show them.
+
+A note travels to GitHub inside the link, and GitHub rejects very long links. If a note is
+too long, the app offers **Copy content and open GitHub** instead: the form opens with the
+title and tags filled, and you paste the content into its Content box.
+
 > **Why edit in the app instead of on GitHub?** GitHub's issue *forms* re-seed their fields
 > from the URL whenever the page re-renders, so edits typed *on GitHub* can snap back to the
 > original values. The app sidesteps that: finalize the fields here, then just submit the
@@ -130,6 +150,7 @@ This is a PWA, so you install it from the browser (not an app store).
 | 💬 Response       | `post-response.yml`  | `[Response]`       | Blank issue  | Response Type, RSVP Status, Target URL, Title, Content, Tags | Type and RSVP status are picked on the Response screen |
 | ➕ Follow         | `follow.yml`         | `[Follow]`         | Blank issue  | Feed URL (optional), Site URL, Title, Roll      | A feed is mandatory; an empty Feed URL asks the site's Action to discover one |
 | 📖 Read It Later  | `add-read-later.yml` | `[Read Later]`     | Styled form  | `url`, `url_title`                             | Clear the Title field → the site auto-fetches the page title; entries auto-expire |
+| 📝 Note           | `post-note.yml`      | `[Note]`           | Styled form  | `post_title`, `content`, `tags`                 | Started from the home screen; needs a title and at least 3 characters of content |
 
 ### How posts reach GitHub
 
@@ -169,18 +190,22 @@ blogroll/podroll entry is written without a feed.
 
 ```
 /
-├── index.html      # Install / landing page
+├── index.html      # Home: post-type tiles, plus install instructions when not installed
 ├── share.html      # Editable review screen + post-type buttons, Response and Follow panels
+├── note.html       # Note screen
 ├── app.js          # Install prompt + service worker registration
 ├── issue-core.js   # Post-type registry: turns the entered values into a GitHub "new issue" link
+├── drafts.js       # Saves a draft on the device while typing
 ├── share.js        # Parses the share, prefills editable fields, opens Bookmark / Read It Later
 ├── response.js     # Response panel: response type and RSVP status
+├── note.js         # Note screen: validation, drafts, long-note fallback
 ├── follow-core.js  # Pure URL, handoff, and feed-discovery helpers
 ├── follow.js       # Mobile follow panel and best-effort feed picker
 ├── scripts/
 │   └── check-templates.js  # Compares issue-core.js with the website repo's issue templates
 ├── tests/
 │   ├── check-templates.test.js # Node tests for the template comparison
+│   ├── drafts.test.js          # Node tests for draft storage
 │   ├── follow-core.test.js     # Node tests for the follow helpers
 │   └── issue-core.test.js      # Node tests for the issue text and links
 ├── .github/workflows/
@@ -191,6 +216,7 @@ blogroll/podroll entry is written without a feed.
 ├── icon.webp       # App icon
 ├── icon-192.webp   # 192×192 icon
 ├── icon-512.webp   # 512×512 icon
+├── shortcut-*.png  # Icons for the long-press shortcuts (one per shortcut)
 ├── LICENSE         # MIT
 └── README.md       # This file
 ```

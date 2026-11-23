@@ -110,6 +110,52 @@ body.page-install {
     font-weight: 600;
 }
 
+/* Home tiles (index.html) */
+
+.tile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.tile {
+    display: block;
+    min-height: 44px;
+    padding: 1rem 0.5rem;
+    border: 2px solid #e1e4e8;
+    border-radius: 10px;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.tile:hover,
+.tile:focus-visible {
+    border-color: #2ea44f;
+    background: #f6f8fa;
+}
+
+.tile .icon {
+    display: block;
+    margin: 0 0 0.25rem;
+    font-size: 1.8rem;
+}
+
+.tile-wide {
+    grid-column: 1 / -1;
+}
+
+.tile-detail {
+    display: block;
+    margin-top: 0.15rem;
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
 /* ---------- Share target page (share.html) ---------- */
 
 .page-share .container {
@@ -125,6 +171,14 @@ body.page-install {
     margin-bottom: 1.5rem;
     color: #333;
     font-size: 1.8rem;
+}
+
+.home-link {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    color: #0969da;
+    font-size: 0.9rem;
+    text-decoration: none;
 }
 
 .btn {
@@ -219,7 +273,8 @@ body.page-install {
     min-height: 4.5rem;
 }
 
-.field input.invalid {
+.field input.invalid,
+.field textarea.invalid {
     border-color: #d1242f;
 }
 
@@ -342,6 +397,10 @@ body.page-install {
     color: #d1242f;
     font-size: 0.85rem;
     text-align: left;
+}
+
+.panel-status.is-info {
+    color: #666;
 }
 
 .feed-choice-url {

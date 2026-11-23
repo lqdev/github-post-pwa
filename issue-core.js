@@ -56,6 +56,14 @@
             required: ['url'],
             params: { url: 'url', title: 'url_title' },
         },
+        note: {
+            template: 'post-note.yml',
+            label: 'note',
+            titlePrefix: '[Note] ',
+            delivery: 'template',
+            required: ['title'],
+            params: { title: 'post_title', content: 'content', tags: 'tags' },
+        },
         response: {
             template: 'post-response.yml',
             label: 'response',
